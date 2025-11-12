@@ -9,26 +9,32 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class Todo extends TimeStamp {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @Column(name = "content", length = 255)
     private String content;
 
-    @Column(name = "sort")
-    private double sort;
+    @Column(name = "prev_todo_id", nullable = true)
+    private Long prevTodoId;
+
+    @Column(name = "next_todo_id", nullable = true)
+    private Long nextTodoId;
 
     @Column(name = "completed")
     private boolean completed;
@@ -38,4 +44,17 @@ public class Todo extends TimeStamp {
 
     @Column(name = "status")
     private Status status;
+
+    @Builder
+    public Todo(Member member, String content, Long prevTodoId, Long nextTodoId, boolean completed,
+                LocalDateTime dueDate,
+                Status status) {
+        this.member = member;
+        this.content = content;
+        this.prevTodoId = prevTodoId;
+        this.nextTodoId = nextTodoId;
+        this.completed = completed;
+        this.dueDate = dueDate;
+        this.status = status;
+    }
 }
