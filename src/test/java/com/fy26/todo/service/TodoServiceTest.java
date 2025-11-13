@@ -1,16 +1,24 @@
 package com.fy26.todo.service;
 
+import static com.fy26.todo.service.TodoService.GAP_ORDER_INDEX;
+import static com.fy26.todo.service.TodoService.INITIAL_ORDER_INDEX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fy26.todo.domain.Member;
 import com.fy26.todo.domain.Role;
+import com.fy26.todo.domain.Status;
 import com.fy26.todo.domain.Todo;
+import com.fy26.todo.domain.TodoPosition;
 import com.fy26.todo.dto.TodoCreateRequest;
+import com.fy26.todo.dto.TodoGetResponse;
+import com.fy26.todo.dto.TodoOrderUpdateRequest;
 import com.fy26.todo.exception.TodoException;
 import com.fy26.todo.repository.MemberRepository;
+import com.fy26.todo.repository.TodoRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +29,9 @@ class TodoServiceTest {
 
     @Autowired
     private TodoService todoService;
+
+    @Autowired
+    private TodoRepository todoRepository;
 
     @Autowired
     private MemberRepository memberRepository;
@@ -37,7 +48,7 @@ class TodoServiceTest {
         final Todo actual = todoService.createTodo(request, member);
 
         // then
-        assertThat(actual.getOrderIndex()).isEqualTo(100_000L);
+        assertThat(actual.getOrderIndex()).isEqualTo(INITIAL_ORDER_INDEX);
     }
 
     @DisplayName("todo를 두 개 생성한다.")
@@ -53,8 +64,8 @@ class TodoServiceTest {
         final Todo secondActual = todoService.createTodo(request, member);
 
         // then
-        assertThat(firstActual.getOrderIndex()).isEqualTo(100_000L);
-        assertThat(secondActual.getOrderIndex()).isZero();
+        assertThat(firstActual.getOrderIndex()).isEqualTo(INITIAL_ORDER_INDEX);
+        assertThat(secondActual.getOrderIndex()).isEqualTo(INITIAL_ORDER_INDEX + GAP_ORDER_INDEX);
     }
 
     @DisplayName("사용자가 생성한 모든 todo를 반환한다.")
@@ -99,5 +110,123 @@ class TodoServiceTest {
 
         // when & then
         assertThatThrownBy(() -> todoService.getTodo(invalidId)).isExactlyInstanceOf(TodoException.class);
+    }
+
+    @DisplayName("다른 사용자가 생성한 todo의 순서를 변경할 시 예외가 발생한다.")
+    @Test
+    void throw_exception_when_update_todo_order_of_another_member() {
+        // given
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", LocalDateTime.now());
+        final Member invalidMember = new Member(Role.USER, "아이디1", "비번1");
+        final Member validMember = new Member(Role.USER, "아이디2", "비번2");
+        memberRepository.saveAll(List.of(invalidMember, validMember));
+        final Todo savedTodo = todoService.createTodo(request, validMember);
+
+        // when & then
+        assertThatThrownBy(() -> todoService.updateTodoOrder(
+                savedTodo.getId(), new TodoOrderUpdateRequest(TodoPosition.TOP, null, null), invalidMember))
+                .isExactlyInstanceOf(TodoException.class);
+    }
+
+    @DisplayName("두번째 todo를 가장 윗 순서로 변경한다.")
+    @Test
+    void update_todo_order_to_top() {
+        // given
+        final TodoCreateRequest request = new TodoCreateRequest("할 일", LocalDateTime.now());
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+        final Todo firstTodo = todoService.createTodo(request, member);
+        final Todo secondTodo = todoService.createTodo(request, member);
+
+        // when
+        todoService.updateTodoOrder(secondTodo.getId(),
+                new TodoOrderUpdateRequest(TodoPosition.TOP, null, firstTodo.getId()), member);
+
+        // then
+        final TodoGetResponse secondTodoInfo = todoService.getTodo(secondTodo.getId());
+        assertThat(secondTodoInfo.orderIndex()).isEqualTo(INITIAL_ORDER_INDEX - GAP_ORDER_INDEX);
+    }
+
+    @DisplayName("첫번째 todo를 가장 아랫 순서로 변경한다.")
+    @Test
+    void update_todo_order_to_bottom() {
+        // given
+        final TodoCreateRequest request = new TodoCreateRequest("할 일", LocalDateTime.now());
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+        final Todo firstTodo = todoService.createTodo(request, member);
+        final Todo secondTodo = todoService.createTodo(request, member);
+
+        // when
+        todoService.updateTodoOrder(firstTodo.getId(),
+                new TodoOrderUpdateRequest(TodoPosition.BOTTOM, secondTodo.getId(), null), member);
+
+        // then
+        final TodoGetResponse firstTodoInfo = todoService.getTodo(firstTodo.getId());
+        assertThat(firstTodoInfo.orderIndex()).isEqualTo(secondTodo.getOrderIndex() + GAP_ORDER_INDEX);
+    }
+
+    @DisplayName("첫번째 todo 위치를 두번째 todo와 세번째 todo의 사이로 변경한다")
+    @Test
+    void update_todo_order_between_two_todos() {
+        // given
+        final TodoCreateRequest request = new TodoCreateRequest("할 일", LocalDateTime.now());
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+        final Todo firstTodo = todoService.createTodo(request, member);
+        final Todo secondTodo = todoService.createTodo(request, member);
+        final Todo thirdTodo = todoService.createTodo(request, member);
+
+        // when
+        todoService.updateTodoOrder(firstTodo.getId(),
+                new TodoOrderUpdateRequest(TodoPosition.MIDDLE, secondTodo.getId(), thirdTodo.getId()), member);
+
+        // then
+        final TodoGetResponse firstTodoInfo = todoService.getTodo(firstTodo.getId());
+        assertThat(firstTodoInfo.orderIndex()).isEqualTo((secondTodo.getOrderIndex() + thirdTodo.getOrderIndex()) / 2);
+    }
+
+    @DisplayName("todo 순서 변경 시 Long 범위를 벗어날 경우 재정렬을 수행한다.")
+    @Test
+    void rebalance_when_order_index_exceeds_long_range() {
+        // given
+        final Member member = memberRepository.save(new Member(Role.USER, "아이디", "비번"));
+        memberRepository.save(member);
+        final Todo firstTodo = new Todo(member, "투두", INITIAL_ORDER_INDEX, false, LocalDateTime.now(), Status.ACTIVE);
+        final Todo secondTodo = new Todo(member, "투두", Long.MAX_VALUE, false, LocalDateTime.now(), Status.ACTIVE);
+        final Todo savedFirstTodo = todoRepository.save(firstTodo);
+        final Todo savedSecondTodo = todoRepository.save(secondTodo);
+
+        // when
+        todoService.updateTodoOrder(savedFirstTodo.getId(),
+                new TodoOrderUpdateRequest(TodoPosition.BOTTOM, savedSecondTodo.getId(), null), member);
+
+        // then
+        final long firstOrderIndex = todoService.getTodo(savedFirstTodo.getId()).orderIndex();
+        assertThat(firstOrderIndex).isEqualTo(INITIAL_ORDER_INDEX + GAP_ORDER_INDEX * 2);
+        final long secondOrderIndex = todoService.getTodo(savedSecondTodo.getId()).orderIndex();
+        assertThat(secondOrderIndex).isEqualTo(INITIAL_ORDER_INDEX + GAP_ORDER_INDEX);
+    }
+
+    @DisplayName("todo 순서 변경 시 정렬 인덱스가 같을 경우 재정렬을 수행한다.")
+    @Test
+    void rebalance_when_order_index_is_same() {
+        // given
+        final Member member = memberRepository.save(new Member(Role.USER, "아이디", "비번"));
+        memberRepository.save(member);
+        final Todo firstTodo = new Todo(member, "투두", 10L, false, LocalDateTime.now(), Status.ACTIVE);
+        final Todo secondTodo = new Todo(member, "투두", 11L, false, LocalDateTime.now(), Status.ACTIVE);
+        final Todo thirdTodo = new Todo(member, "투두", 50L, false, LocalDateTime.now(), Status.ACTIVE);
+        final Todo savedFirstTodo = todoRepository.save(firstTodo);
+        final Todo savedSecondTodo = todoRepository.save(secondTodo);
+        final Todo savedThirdTodo = todoRepository.save(thirdTodo);
+
+        // when
+        todoService.updateTodoOrder(savedThirdTodo.getId(),
+                new TodoOrderUpdateRequest(TodoPosition.MIDDLE, savedFirstTodo.getId(), savedSecondTodo.getId()), member);
+
+        // then
+        final long thirdOrderIndex = todoService.getTodo(savedThirdTodo.getId()).orderIndex();
+        assertThat(thirdOrderIndex).isEqualTo((INITIAL_ORDER_INDEX * 2 + GAP_ORDER_INDEX) / 2);
     }
 }
