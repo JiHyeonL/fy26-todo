@@ -34,7 +34,23 @@ class TodoServiceTest {
         final Todo actual = todoService.createTodo(request, member);
 
         // then
-        assertThat(actual.getPrevTodoId()).isNull();
-        assertThat(actual.getNextTodoId()).isNull();
+        assertThat(actual.getOrderIndex()).isEqualTo(100_000L);
+    }
+
+    @DisplayName("todo를 두 개 생성한다.")
+    @Test
+    void create_two_todo() {
+        // given
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", LocalDateTime.now());
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+
+        // when
+        final Todo firstActual = todoService.createTodo(request, member);
+        final Todo secondActual = todoService.createTodo(request, member);
+
+        // then
+        assertThat(firstActual.getOrderIndex()).isEqualTo(100_000L);
+        assertThat(secondActual.getOrderIndex()).isZero();
     }
 }
