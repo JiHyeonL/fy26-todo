@@ -52,4 +52,8 @@ public class Todo extends TimeStamp {
         this.dueDate = dueDate;
         this.status = status;
     }
+
+    public void setOrderIndex(final long newOrderIndex) {
+        this.orderIndex = newOrderIndex;
+    }
 }
