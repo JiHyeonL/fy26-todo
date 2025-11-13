@@ -30,11 +30,8 @@ public class Todo extends TimeStamp {
     @Column(name = "content", length = 255)
     private String content;
 
-    @Column(name = "prev_todo_id", nullable = true)
-    private Long prevTodoId;
-
-    @Column(name = "next_todo_id", nullable = true)
-    private Long nextTodoId;
+    @Column(name = "order_index")
+    private Long orderIndex;
 
     @Column(name = "completed")
     private boolean completed;
@@ -46,13 +43,11 @@ public class Todo extends TimeStamp {
     private Status status;
 
     @Builder
-    public Todo(Member member, String content, Long prevTodoId, Long nextTodoId, boolean completed,
-                LocalDateTime dueDate,
+    public Todo(Member member, String content, Long orderIndex, boolean completed, LocalDateTime dueDate,
                 Status status) {
         this.member = member;
         this.content = content;
-        this.prevTodoId = prevTodoId;
-        this.nextTodoId = nextTodoId;
+        this.orderIndex = orderIndex;
         this.completed = completed;
         this.dueDate = dueDate;
         this.status = status;
