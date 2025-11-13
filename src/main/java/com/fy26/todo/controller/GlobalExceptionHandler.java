@@ -1,7 +1,7 @@
 package com.fy26.todo.controller;
 
 import com.fy26.todo.exception.common.CustomException;
-import com.fy26.todo.exception.common.ExceptionResponse;
+import com.fy26.todo.exception.common.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
     private static final String UNHANDLED_LOG_MESSAGE = "[UNHANDLED] {} (path: {}, method: {}) cause: {}";
 
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ExceptionResponse> handleCustomException(final CustomException e, final HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleCustomException(final CustomException e, final HttpServletRequest request) {
         log.warn(HANDLED_LOG_MESSAGE,
                 e.getStatus(),
                 e.getMessage(),
@@ -31,11 +31,11 @@ public class GlobalExceptionHandler {
                 e.getInvalidData()
         );
         return ResponseEntity.status(e.getStatus())
-                .body(ExceptionResponse.fromCustom(e, request));
+                .body(ErrorResponse.fromCustom(e, request));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ExceptionResponse> handleValidException(final MethodArgumentNotValidException e, final HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleValidException(final MethodArgumentNotValidException e, final HttpServletRequest request) {
         final Map<String, Object> invalidFields = e.getBindingResult().getFieldErrors()
                 .stream()
                 .collect(Collectors.toMap(
@@ -59,11 +59,11 @@ public class GlobalExceptionHandler {
                 e
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ExceptionResponse.fromCustom(customException, request));
+                .body(ErrorResponse.fromCustom(customException, request));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ExceptionResponse> handleException(final Exception e, final HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleException(final Exception e, final HttpServletRequest request) {
         log.error(UNHANDLED_LOG_MESSAGE,
                 e.getClass().getSimpleName(),
                 request.getRequestURI(),
@@ -72,6 +72,6 @@ public class GlobalExceptionHandler {
                 e
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ExceptionResponse.fromUnHandled(request));
+                .body(ErrorResponse.fromUnHandled(request));
     }
 }

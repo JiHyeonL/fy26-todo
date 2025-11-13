@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import org.springframework.http.HttpStatus;
 
-public record ExceptionResponse(
+public record ErrorResponse(
         LocalDateTime timestamp,
         HttpStatus status,
         int errorCode,
@@ -13,8 +13,8 @@ public record ExceptionResponse(
         String method
 ) {
 
-    public static ExceptionResponse fromCustom(final CustomException e, final HttpServletRequest request) {
-        return new ExceptionResponse(
+    public static ErrorResponse fromCustom(final CustomException e, final HttpServletRequest request) {
+        return new ErrorResponse(
                 LocalDateTime.now(),
                 e.getStatus(),
                 e.getStatus().value(),
@@ -24,8 +24,8 @@ public record ExceptionResponse(
         );
     }
 
-    public static ExceptionResponse fromUnHandled(final HttpServletRequest request) {
-        return new ExceptionResponse(
+    public static ErrorResponse fromUnHandled(final HttpServletRequest request) {
+        return new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
