@@ -23,7 +23,7 @@ public class TodoController {
 
     private final TodoService todoService;
 
-    @PostMapping("/todo")
+    @PostMapping("/todos")
     public ResponseEntity<Long> createTodo(final @RequestBody TodoCreateRequest request, final HttpSession session) {
         // todo: 세션에서 회원 정보 가져오기
         final Todo todo = todoService.createTodo(request, new Member(Role.USER, "아이디", "비번"));
@@ -38,7 +38,7 @@ public class TodoController {
         return ResponseEntity.ok(todos);
     }
 
-    @GetMapping("/todo/{id}")
+    @GetMapping("/todos/{id}")
     public ResponseEntity<TodoGetResponse> getTodo(final @PathVariable Long id, final HttpSession session) {
         // todo: 세션에서 회원 정보 가져오기
         final TodoGetResponse todo = todoService.getTodo(id);
