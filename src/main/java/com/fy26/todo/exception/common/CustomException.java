@@ -13,4 +13,8 @@ public class CustomException extends RuntimeException {
     private final String message;
     private final transient Map<String, Object> invalidData;
     private final Throwable causeException;
+
+    public CustomException(CustomErrorCode errorCode, Map<String, Object> invalidData, Throwable causeException) {
+        this(errorCode.getStatus(), errorCode.getMessage(), invalidData, causeException);
+    }
 }
