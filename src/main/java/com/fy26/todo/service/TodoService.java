@@ -21,6 +21,8 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -49,8 +51,50 @@ public class TodoService {
                 .status(Status.ACTIVE)
                 .build();
         final Todo savedTodo = todoRepository.save(todo);
-        tagService.createTagsForTodo(savedTodo, request.tagNames());
+
+        final List<String> normalizedTagNames = normalizeTagNames(request.tagNames());
+        final List<Tag> existingTags = tagService.getExistingTags(normalizedTagNames, member);
+        final Set<String> existingTagNames = existingTags.stream()
+                .map(Tag::getName)
+                .collect(Collectors.toSet());
+        final List<String> newTagNames = getNewTagNames(normalizedTagNames, existingTagNames);
+        tagService.createAndBindNewTags(savedTodo, newTagNames);
+        tagService.bindExistingTags(savedTodo, existingTags);
+
         return savedTodo;
+    }
+
+    private List<String> normalizeTagNames(final List<String> tagNames) {
+        return tagNames.stream()
+                .map(String::trim)
+                .distinct()
+                .toList();
+    }
+
+    private List<String> getNewTagNames(final List<String> tagNames, final Set<String> existingTagNames) {
+        return tagNames.stream()
+                .filter(name -> !existingTagNames.contains(name))
+                .toList();
+    }
+
+    @Transactional
+    public List<TagCreateResponse> addTags(final Long id, final TagCreateRequest request, final Member member) {
+        final Todo todo = todoRepository.findById(id)
+                .orElseThrow(() -> new TodoException(TodoErrorCode.TODO_NOT_FOUND, Map.of("id", id)));
+        validateTodoOwner(todo, member);
+
+        final List<String> normalizedTagNames = normalizeTagNames(request.tagNames());
+        final List<Tag> existingTags = tagService.getExistingTags(normalizedTagNames, member);
+        final Set<String> existingTagNames = existingTags.stream()
+                .map(Tag::getName)
+                .collect(Collectors.toSet());
+        final List<String> newTagNames = getNewTagNames(normalizedTagNames, existingTagNames);
+        final List<Tag> savedNewTags = tagService.createAndBindNewTags(todo, newTagNames);
+        tagService.bindExistingTags(todo, existingTags);
+
+        return savedNewTags.stream()
+                .map(newTag -> new TagCreateResponse(newTag.getId(), newTag.getName()))
+                .toList();
     }
 
     public List<TodoGetResponse> getTodos(final Member member) {
@@ -184,17 +228,6 @@ public class TodoService {
             }
             todo.setDueDate(request.dueDate());
         }
-    }
-
-    @Transactional
-    public List<TagCreateResponse> addTags(final Long id, final TagCreateRequest request, final Member member) {
-        final Todo todo = todoRepository.findById(id)
-                .orElseThrow(() -> new TodoException(TodoErrorCode.TODO_NOT_FOUND, Map.of("id", id)));
-        validateTodoOwner(todo, member);
-        final List<Tag> tags = tagService.createTagsForTodo(todo, request.tagNames());
-        return tags.stream()
-                .map(tag -> new TagCreateResponse(tag.getId(), tag.getName()))
-                .toList();
     }
 }
 
