@@ -9,11 +9,13 @@ import com.fy26.todo.dto.todo.TodoCreateRequest;
 import com.fy26.todo.dto.todo.TodoGetResponse;
 import com.fy26.todo.dto.todo.TodoOrderContext;
 import com.fy26.todo.dto.todo.TodoOrderUpdateRequest;
+import com.fy26.todo.dto.todo.TodoUpdateRequest;
 import com.fy26.todo.exception.TodoErrorCode;
 import com.fy26.todo.exception.TodoException;
 import com.fy26.todo.repository.TodoRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -164,6 +166,22 @@ public class TodoService {
                 .orElseThrow(() -> new TodoException(TodoErrorCode.TODO_NOT_FOUND, Map.of("id", id)));
         validateTodoOwner(todo, member);
         todo.setCompleted(!todo.isCompleted());
+    }
+
+    @Transactional
+    public void updateTodo(final Long id, final TodoUpdateRequest request, final Member member) {
+        final Todo todo = todoRepository.findById(id)
+                .orElseThrow(() -> new TodoException(TodoErrorCode.TODO_NOT_FOUND, Map.of("id", id)));
+        validateTodoOwner(todo, member);
+        if (request.content() != null && !request.content().isBlank()) {
+            todo.setContent(request.content());
+        }
+        if (request.dueDate() != null) {
+            if (request.dueDate().isBefore(LocalDateTime.now())) {
+                throw new TodoException(TodoErrorCode.INVALID_DUE_DATE, Map.of("dueDate", request.dueDate()));
+            }
+            todo.setDueDate(request.dueDate());
+        }
     }
 }
 

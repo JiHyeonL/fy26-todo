@@ -60,4 +60,12 @@ public class Todo extends TimeStamp {
     public void setCompleted(final boolean newCompleted) {
         this.completed = newCompleted;
     }
+
+    public void setContent(final String newContent) {
+        this.content = newContent;
+    }
+
+    public void setDueDate(final LocalDateTime newDueDate) {
+        this.dueDate = newDueDate;
+    }
 }

@@ -6,6 +6,7 @@ import com.fy26.todo.domain.Todo;
 import com.fy26.todo.dto.todo.TodoCreateRequest;
 import com.fy26.todo.dto.todo.TodoGetResponse;
 import com.fy26.todo.dto.todo.TodoOrderUpdateRequest;
+import com.fy26.todo.dto.todo.TodoUpdateRequest;
 import com.fy26.todo.service.TodoService;
 import jakarta.servlet.http.HttpSession;
 import java.net.URI;
@@ -63,6 +64,18 @@ public class TodoController {
     public ResponseEntity<Void> toggleTodoComplete(final @PathVariable Long id, final HttpSession session) {
         // todo: 세션에서 회원 정보 가져오기
         todoService.updateComplete(id, new Member(Role.USER, "아이디", "비번"));
+        return ResponseEntity.noContent()
+                .build();
+    }
+
+    @PatchMapping("/todos/{id}")
+    public ResponseEntity<Void> updateTodo(
+            final @PathVariable Long id,
+            final @RequestBody TodoUpdateRequest request,
+            final HttpSession session
+    ) {
+        // todo: 세션에서 회원 정보 가져오기
+        todoService.updateTodo(id, request, new Member(Role.USER, "아이디", "비번"));
         return ResponseEntity.noContent()
                 .build();
     }
