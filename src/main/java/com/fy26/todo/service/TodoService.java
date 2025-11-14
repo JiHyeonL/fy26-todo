@@ -7,7 +7,6 @@ import com.fy26.todo.domain.Todo;
 import com.fy26.todo.domain.TodoPosition;
 import com.fy26.todo.dto.tag.TagCreateRequest;
 import com.fy26.todo.dto.tag.TagCreateResponse;
-import com.fy26.todo.dto.tag.TagGetResponse;
 import com.fy26.todo.dto.todo.TodoCreateRequest;
 import com.fy26.todo.dto.todo.TodoCreateResponse;
 import com.fy26.todo.dto.todo.TodoGetResponse;
@@ -108,36 +107,20 @@ public class TodoService {
     public List<TodoGetResponse> getTodos(final Member member) {
         final List<Todo> todos = todoRepository.findAllByMemberOrderByOrderIndexAsc(member);
         return todos.stream()
-                .map(todo -> new TodoGetResponse(
-                        todo.getId(),
-                        todo.getOrderIndex(),
-                        todo.getContent(),
-                        tagService.getTagsForTodo(todo.getId())
-                                .stream()
-                                .map(tag -> new TagGetResponse(tag.getId(), tag.getName()))
-                                .toList(),
-                        todo.isCompleted(),
-                        todo.getDueDate(),
-                        ChronoUnit.DAYS.between(LocalDate.now(), todo.getDueDate().toLocalDate())
-                ))
+                .map(todo -> {
+                    final List<Tag> tags = tagService.getTagsForTodo(todo.getId());
+                    final long dDay = ChronoUnit.DAYS.between(LocalDate.now(), todo.getDueDate().toLocalDate());
+                    return TodoGetResponse.of(todo, dDay, tags);
+                })
                 .toList();
     }
 
     public TodoGetResponse getTodo(final Long id) {
         final Todo todo = todoRepository.findById(id)
                 .orElseThrow(() -> new TodoException(TodoErrorCode.TODO_NOT_FOUND, Map.of("id", id)));
-        return new TodoGetResponse(
-                todo.getId(),
-                todo.getOrderIndex(),
-                todo.getContent(),
-                tagService.getTagsForTodo(todo.getId())
-                        .stream()
-                        .map(tag -> new TagGetResponse(tag.getId(), tag.getName()))
-                        .toList(),
-                todo.isCompleted(),
-                todo.getDueDate(),
-                ChronoUnit.DAYS.between(LocalDate.now(), todo.getDueDate().toLocalDate())
-        );
+        final long dDay = ChronoUnit.DAYS.between(LocalDate.now(), todo.getDueDate().toLocalDate());
+        final List<Tag> tags = tagService.getTagsForTodo(todo.getId());
+        return TodoGetResponse.of(todo, dDay, tags);
     }
 
     @Transactional
@@ -257,6 +240,17 @@ public class TodoService {
     @Transactional
     public void deleteTag(final Long tagId, final Member member) {
         tagService.deleteTag(tagId, member);
+    }
+
+    public List<TodoGetResponse> filterTodos(final Boolean completed, final List<String> tagNames, final Member member) {
+        return todoRepository.findFilteredTodos(member, completed, tagNames)
+                .stream()
+                .map(todo -> {
+                    final long dDay = ChronoUnit.DAYS.between(LocalDate.now(), todo.getDueDate().toLocalDate());
+                    final List<Tag> tags = tagService.getTagsForTodo(todo.getId());
+                    return TodoGetResponse.of(todo, dDay, tags);
+                })
+                .toList();
     }
 }
 

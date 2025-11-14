@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
@@ -63,6 +64,17 @@ public class TodoController {
         // todo: 세션에서 회원 정보 가져오기
         final TodoGetResponse todo = todoService.getTodo(id);
         return ResponseEntity.ok(todo);
+    }
+
+    @GetMapping("/todos/filter")
+    public ResponseEntity<List<TodoGetResponse>> filterTodos(
+            @RequestParam(required = false) Boolean completed,
+            @RequestParam(required = false) List<String> tags,
+            final HttpSession session
+    ) {
+        // todo: 세션에서 회원 정보 가져오기
+        final List<TodoGetResponse> response = todoService.filterTodos(completed, tags, new Member(Role.USER, "아이디", "비번"));
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/todos/{id}/order")
