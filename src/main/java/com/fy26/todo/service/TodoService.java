@@ -229,5 +229,13 @@ public class TodoService {
             todo.setDueDate(request.dueDate());
         }
     }
+
+    @Transactional
+    public void deleteTodo(final Long id, final Member member) {
+        final Todo todo = todoRepository.findById(id)
+                .orElseThrow(() -> new TodoException(TodoErrorCode.TODO_NOT_FOUND, Map.of("id", id)));
+        validateTodoOwner(todo, member);
+        todo.setStatus(Status.DELETED);
+    }
 }
 

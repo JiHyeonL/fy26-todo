@@ -15,6 +15,7 @@ import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -92,6 +93,14 @@ public class TodoController {
     ) {
         // todo: 세션에서 회원 정보 가져오기
         todoService.updateTodo(id, request, new Member(Role.USER, "아이디", "비번"));
+        return ResponseEntity.noContent()
+                .build();
+    }
+
+    @DeleteMapping("/todos/{id}")
+    public ResponseEntity<Void> deleteTodo(final @PathVariable Long id, final HttpSession session) {
+        // todo: 세션에서 회원 정보 가져오기
+        todoService.deleteTodo(id, new Member(Role.USER, "아이디", "비번"));
         return ResponseEntity.noContent()
                 .build();
     }

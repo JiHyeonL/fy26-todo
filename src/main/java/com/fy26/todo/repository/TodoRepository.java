@@ -12,17 +12,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TodoRepository extends JpaRepository<Todo, Long> {
 
-    @Query("SELECT MAX(t.orderIndex) FROM Todo t WHERE t.member = :member")
+    @Query("SELECT MAX(t.orderIndex) FROM Todo t WHERE t.member = :member AND t.status = com.fy26.todo.domain.Status.ACTIVE")
     Optional<Long> findMaxOrderIndexByMember(@Param("member") Member member);
 
-    @Query("SELECT t.orderIndex FROM Todo t WHERE t.id = :id")
+    @Query("SELECT t.orderIndex FROM Todo t WHERE t.id = :id AND t.status = com.fy26.todo.domain.Status.ACTIVE")
     Optional<Long> findOrderIndexById(@Param("id") long id);
-
-    @Query("""
-        SELECT MAX(t.orderIndex) FROM Todo t
-        WHERE t.member = :member AND t.orderIndex < :currentOrderIndex
-    """)
-    Optional<Long> findPrevOrderIndex(@Param("member") Member member, @Param("currentOrderIndex") long currentOrderIndex);
 
     List<Todo> findAllByMemberOrderByOrderIndexAsc(Member member);
 }

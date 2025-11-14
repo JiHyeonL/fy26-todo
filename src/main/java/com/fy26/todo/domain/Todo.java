@@ -13,9 +13,11 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLRestriction("status = 'ACTIVE'")
 @Entity
 public class Todo extends TimeStamp {
 
@@ -67,5 +69,9 @@ public class Todo extends TimeStamp {
 
     public void setDueDate(final LocalDateTime newDueDate) {
         this.dueDate = newDueDate;
+    }
+
+    public void setStatus(final Status newStatus) {
+        this.status = newStatus;
     }
 }
