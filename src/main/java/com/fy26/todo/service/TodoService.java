@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -69,21 +68,20 @@ public class TodoService {
     }
 
     public TodoGetResponse getTodo(final Long id) {
-        final Optional<Todo> todoOrNull = todoRepository.findById(id);
-        return todoOrNull
-                .map(todo -> new TodoGetResponse(
-                        todo.getId(),
-                        todo.getOrderIndex(),
-                        todo.getContent(),
-                        tagService.getTagsForTodo(todo.getId())
-                                .stream()
-                                .map(Tag::getName)
-                                .toList(),
-                        todo.isCompleted(),
-                        todo.getDueDate(),
-                        ChronoUnit.DAYS.between(LocalDate.now(), todo.getDueDate().toLocalDate())
-                ))
+        final Todo todo = todoRepository.findById(id)
                 .orElseThrow(() -> new TodoException(TodoErrorCode.TODO_NOT_FOUND, Map.of("id", id)));
+        return new TodoGetResponse(
+                todo.getId(),
+                todo.getOrderIndex(),
+                todo.getContent(),
+                tagService.getTagsForTodo(todo.getId())
+                        .stream()
+                        .map(Tag::getName)
+                        .toList(),
+                todo.isCompleted(),
+                todo.getDueDate(),
+                ChronoUnit.DAYS.between(LocalDate.now(), todo.getDueDate().toLocalDate())
+        );
     }
 
     @Transactional
@@ -158,6 +156,14 @@ public class TodoService {
             todo.setOrderIndex(orderIndex);
             orderIndex += GAP_ORDER_INDEX;
         }
+    }
+
+    @Transactional
+    public void updateComplete(final Long id, final Member member) {
+        final Todo todo = todoRepository.findById(id)
+                .orElseThrow(() -> new TodoException(TodoErrorCode.TODO_NOT_FOUND, Map.of("id", id)));
+        validateTodoOwner(todo, member);
+        todo.setCompleted(!todo.isCompleted());
     }
 }
 

@@ -58,4 +58,12 @@ public class TodoController {
         return ResponseEntity.noContent()
                 .build();
     }
+
+    @PatchMapping("/todos/{id}/complete")
+    public ResponseEntity<Void> toggleTodoComplete(final @PathVariable Long id, final HttpSession session) {
+        // todo: 세션에서 회원 정보 가져오기
+        todoService.updateComplete(id, new Member(Role.USER, "아이디", "비번"));
+        return ResponseEntity.noContent()
+                .build();
+    }
 }

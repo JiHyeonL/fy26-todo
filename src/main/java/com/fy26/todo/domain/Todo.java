@@ -56,4 +56,8 @@ public class Todo extends TimeStamp {
     public void setOrderIndex(final long newOrderIndex) {
         this.orderIndex = newOrderIndex;
     }
+
+    public void setCompleted(final boolean newCompleted) {
+        this.completed = newCompleted;
+    }
 }
