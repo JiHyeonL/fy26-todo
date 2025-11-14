@@ -390,4 +390,25 @@ class TodoServiceTest {
         // then
         assertThat(todos).isEmpty();
     }
+
+    @DisplayName("태그를 삭제한다.")
+    @Test
+    void delete_tag() {
+        // given
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", List.of("태그1"),
+                LocalDateTime.now());
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+        final long tagId = todoService.createTodo(request, member)
+                .tags()
+                .getFirst()
+                .id();
+
+        // when
+        todoService.deleteTag(tagId, member);
+
+        // then
+        assertThat(tagRepository.findById(tagId)).isEmpty();
+        assertThat(todoTagRepository.findAllByTodoId(tagId)).isEmpty();
+    }
 }
