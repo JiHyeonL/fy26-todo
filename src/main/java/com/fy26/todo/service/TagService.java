@@ -5,7 +5,6 @@ import com.fy26.todo.domain.Tag;
 import com.fy26.todo.domain.Todo;
 import com.fy26.todo.domain.TodoTag;
 import com.fy26.todo.repository.TagRepository;
-import com.fy26.todo.repository.TodoRepository;
 import com.fy26.todo.repository.TodoTagRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class TagService {
 
-    private final TodoRepository todoRepository;
     private final TagRepository tagRepository;
     private final TodoTagRepository todoTagRepository;
 
