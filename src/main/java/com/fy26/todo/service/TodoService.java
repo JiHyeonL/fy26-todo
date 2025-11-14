@@ -5,6 +5,8 @@ import com.fy26.todo.domain.Status;
 import com.fy26.todo.domain.Tag;
 import com.fy26.todo.domain.Todo;
 import com.fy26.todo.domain.TodoPosition;
+import com.fy26.todo.dto.tag.TagCreateRequest;
+import com.fy26.todo.dto.tag.TagCreateResponse;
 import com.fy26.todo.dto.todo.TodoCreateRequest;
 import com.fy26.todo.dto.todo.TodoGetResponse;
 import com.fy26.todo.dto.todo.TodoOrderContext;
@@ -182,6 +184,17 @@ public class TodoService {
             }
             todo.setDueDate(request.dueDate());
         }
+    }
+
+    @Transactional
+    public List<TagCreateResponse> addTags(final Long id, final TagCreateRequest request, final Member member) {
+        final Todo todo = todoRepository.findById(id)
+                .orElseThrow(() -> new TodoException(TodoErrorCode.TODO_NOT_FOUND, Map.of("id", id)));
+        validateTodoOwner(todo, member);
+        final List<Tag> tags = tagService.createTagsForTodo(todo, request.tagNames());
+        return tags.stream()
+                .map(tag -> new TagCreateResponse(tag.getId(), tag.getName()))
+                .toList();
     }
 }
 
