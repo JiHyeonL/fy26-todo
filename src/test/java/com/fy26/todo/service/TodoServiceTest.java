@@ -11,6 +11,8 @@ import com.fy26.todo.domain.Role;
 import com.fy26.todo.domain.Status;
 import com.fy26.todo.domain.Todo;
 import com.fy26.todo.domain.TodoPosition;
+import com.fy26.todo.dto.tag.TagCreateRequest;
+import com.fy26.todo.dto.tag.TagCreateResponse;
 import com.fy26.todo.dto.todo.TodoCreateRequest;
 import com.fy26.todo.dto.todo.TodoGetResponse;
 import com.fy26.todo.dto.todo.TodoOrderUpdateRequest;
@@ -286,4 +288,21 @@ class TodoServiceTest {
                 .isExactlyInstanceOf(TodoException.class);
     }
 
+    @DisplayName("투두에 태그를 추가한다.")
+    @Test
+    void add_tags_to_todo() {
+        // given
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", Collections.emptyList(),
+                LocalDateTime.now());
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+        final Todo savedTodo = todoService.createTodo(request, member);
+        final TagCreateRequest tagCreateRequest = new TagCreateRequest(List.of("태그1", "태그2"));
+
+        // when
+        final List<TagCreateResponse> responses = todoService.addTags(savedTodo.getId(), tagCreateRequest, member);
+
+        // then
+        assertThat(responses).hasSize(2);
+    }
 }
