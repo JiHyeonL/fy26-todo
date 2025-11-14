@@ -348,7 +348,7 @@ class TodoServiceTest {
         final TagCreateRequest tagCreateRequest = new TagCreateRequest(List.of("태그1", "태그2"));
 
         // when
-        final List<TagCreateResponse> responses = todoService.addTags(savedTodo.id(), tagCreateRequest, member);
+        final List<TagCreateResponse> responses = todoService.addTagsFromTodo(savedTodo.id(), tagCreateRequest, member);
 
         // then
         assertThat(responses).hasSize(2);
@@ -395,20 +395,40 @@ class TodoServiceTest {
     @Test
     void delete_tag() {
         // given
-        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", List.of("태그1"),
-                LocalDateTime.now());
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", List.of("태그1"), LocalDateTime.now());
         final Member member = new Member(Role.USER, "아이디", "비번");
         memberRepository.save(member);
-        final long tagId = todoService.createTodo(request, member)
-                .tags()
+        final TodoCreateResponse todo = todoService.createTodo(request, member);
+        final long todoId = todo.id();
+        final long deletedTagId = todo.tags()
                 .getFirst()
                 .id();
 
         // when
-        todoService.deleteTag(tagId, member);
+        todoService.deleteTag(deletedTagId, member);
 
         // then
-        assertThat(tagRepository.findById(tagId)).isEmpty();
-        assertThat(todoTagRepository.findAllByTodoId(tagId)).isEmpty();
+        assertThat(tagRepository.findById(deletedTagId)).isEmpty();
+        assertThat(todoTagRepository.findAllByTodoId(todoId)).isEmpty();
+    }
+
+    @DisplayName("투두에 있는 태그를 해제한다.")
+    @Test
+    void unbind_tag_from_todo() {
+        // given
+        final List<String> tags = List.of("태그1", "태그2");
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", tags, LocalDateTime.now());
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+        final TodoCreateResponse todo = todoService.createTodo(request, member);
+        final long tagId = todo.tags()
+                .getFirst()
+                .id();
+
+        // when
+        todoService.removeTagFromTodo(todo.id(), tagId, member);
+
+        // then
+        assertThat(todoTagRepository.findAllByTodoId(todo.id())).hasSize(tags.size() - 1);
     }
 }
