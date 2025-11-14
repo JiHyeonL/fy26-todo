@@ -230,4 +230,21 @@ class TodoServiceTest {
         final long thirdOrderIndex = todoService.getTodo(savedThirdTodo.getId()).orderIndex();
         assertThat(thirdOrderIndex).isEqualTo((INITIAL_ORDER_INDEX * 2 + GAP_ORDER_INDEX) / 2);
     }
+
+    @DisplayName("todo 완료 상태를 토글한다.")
+    @Test
+    void toggle_todo_completed() {
+        // given
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", Collections.emptyList(), LocalDateTime.now());
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+        final Todo savedTodo = todoService.createTodo(request, member);
+
+        // when
+        todoService.updateComplete(savedTodo.getId(), member);
+
+        // then
+        final TodoGetResponse todoInfo = todoService.getTodo(savedTodo.getId());
+        assertThat(todoInfo.completed()).isTrue();
+    }
 }
