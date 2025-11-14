@@ -2,6 +2,7 @@ package com.fy26.todo.service;
 
 import com.fy26.todo.domain.Member;
 import com.fy26.todo.domain.Status;
+import com.fy26.todo.domain.Tag;
 import com.fy26.todo.domain.Todo;
 import com.fy26.todo.domain.TodoPosition;
 import com.fy26.todo.dto.TodoCreateRequest;
@@ -29,6 +30,7 @@ public class TodoService {
     public static final long SAFETY_MARGIN = 1_000_000L;
 
     private final TodoRepository todoRepository;
+    private final TagService tagService;
 
     @Transactional
     public Todo createTodo(final TodoCreateRequest request, final Member member) {
@@ -43,7 +45,9 @@ public class TodoService {
                 .dueDate(request.dueDate())
                 .status(Status.ACTIVE)
                 .build();
-        return todoRepository.save(todo);
+        final Todo savedTodo = todoRepository.save(todo);
+        tagService.createTagsForTodo(savedTodo, request.tagNames());
+        return savedTodo;
     }
 
     public List<TodoGetResponse> getTodos(final Member member) {
@@ -53,6 +57,10 @@ public class TodoService {
                         todo.getId(),
                         todo.getOrderIndex(),
                         todo.getContent(),
+                        tagService.getTagsForTodo(todo.getId())
+                                .stream()
+                                .map(Tag::getName)
+                                .toList(),
                         todo.isCompleted(),
                         todo.getDueDate(),
                         ChronoUnit.DAYS.between(LocalDate.now(), todo.getDueDate().toLocalDate())
@@ -67,6 +75,10 @@ public class TodoService {
                         todo.getId(),
                         todo.getOrderIndex(),
                         todo.getContent(),
+                        tagService.getTagsForTodo(todo.getId())
+                                .stream()
+                                .map(Tag::getName)
+                                .toList(),
                         todo.isCompleted(),
                         todo.getDueDate(),
                         ChronoUnit.DAYS.between(LocalDate.now(), todo.getDueDate().toLocalDate())
