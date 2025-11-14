@@ -2,10 +2,10 @@ package com.fy26.todo.controller;
 
 import com.fy26.todo.domain.Member;
 import com.fy26.todo.domain.Role;
-import com.fy26.todo.domain.Todo;
 import com.fy26.todo.dto.tag.TagCreateRequest;
 import com.fy26.todo.dto.tag.TagCreateResponse;
 import com.fy26.todo.dto.todo.TodoCreateRequest;
+import com.fy26.todo.dto.todo.TodoCreateResponse;
 import com.fy26.todo.dto.todo.TodoGetResponse;
 import com.fy26.todo.dto.todo.TodoOrderUpdateRequest;
 import com.fy26.todo.dto.todo.TodoUpdateRequest;
@@ -32,10 +32,10 @@ public class TodoController {
     @PostMapping("/todos")
     public ResponseEntity<Long> createTodo(final @RequestBody TodoCreateRequest request, final HttpSession session) {
         // todo: 세션에서 회원 정보 가져오기
-        final Todo todo = todoService.createTodo(request, new Member(Role.USER, "아이디", "비번"));
-        final URI location = URI.create("/todo/" + todo.getId());
+        final TodoCreateResponse todo = todoService.createTodo(request, new Member(Role.USER, "아이디", "비번"));
+        final URI location = URI.create("/todo/" + todo.id());
         return ResponseEntity.created(location)
-                .body(todo.getId());
+                .body(todo.id());
     }
 
     @PostMapping("/todos/{id}/tags")

@@ -7,7 +7,9 @@ import com.fy26.todo.domain.Todo;
 import com.fy26.todo.domain.TodoPosition;
 import com.fy26.todo.dto.tag.TagCreateRequest;
 import com.fy26.todo.dto.tag.TagCreateResponse;
+import com.fy26.todo.dto.tag.TagGetResponse;
 import com.fy26.todo.dto.todo.TodoCreateRequest;
+import com.fy26.todo.dto.todo.TodoCreateResponse;
 import com.fy26.todo.dto.todo.TodoGetResponse;
 import com.fy26.todo.dto.todo.TodoOrderContext;
 import com.fy26.todo.dto.todo.TodoOrderUpdateRequest;
@@ -19,10 +21,12 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +42,7 @@ public class TodoService {
     private final TagService tagService;
 
     @Transactional
-    public Todo createTodo(final TodoCreateRequest request, final Member member) {
+    public TodoCreateResponse createTodo(final TodoCreateRequest request, final Member member) {
         final Long lastOrderIndex = todoRepository.findMaxOrderIndexByMember(member)
                 .map(max -> max + GAP_ORDER_INDEX)
                 .orElse(INITIAL_ORDER_INDEX);
@@ -58,10 +62,13 @@ public class TodoService {
                 .map(Tag::getName)
                 .collect(Collectors.toSet());
         final List<String> newTagNames = getNewTagNames(normalizedTagNames, existingTagNames);
-        tagService.createAndBindNewTags(savedTodo, newTagNames);
+        final List<Tag> newTags = tagService.createAndBindNewTags(savedTodo, newTagNames);
         tagService.bindExistingTags(savedTodo, existingTags);
 
-        return savedTodo;
+        final List<Tag> createdTags = Stream.of(existingTags, newTags)
+                .flatMap(Collection::stream)
+                .toList();
+        return TodoCreateResponse.of(savedTodo, createdTags);
     }
 
     private List<String> normalizeTagNames(final List<String> tagNames) {
@@ -89,11 +96,12 @@ public class TodoService {
                 .map(Tag::getName)
                 .collect(Collectors.toSet());
         final List<String> newTagNames = getNewTagNames(normalizedTagNames, existingTagNames);
-        final List<Tag> savedNewTags = tagService.createAndBindNewTags(todo, newTagNames);
+        final List<Tag> newTags = tagService.createAndBindNewTags(todo, newTagNames);
         tagService.bindExistingTags(todo, existingTags);
 
-        return savedNewTags.stream()
-                .map(newTag -> new TagCreateResponse(newTag.getId(), newTag.getName()))
+        return Stream.of(existingTags, newTags)
+                .flatMap(Collection::stream)
+                .map(tag -> new TagCreateResponse(tag.getId(), tag.getName()))
                 .toList();
     }
 
@@ -106,7 +114,7 @@ public class TodoService {
                         todo.getContent(),
                         tagService.getTagsForTodo(todo.getId())
                                 .stream()
-                                .map(Tag::getName)
+                                .map(tag -> new TagGetResponse(tag.getId(), tag.getName()))
                                 .toList(),
                         todo.isCompleted(),
                         todo.getDueDate(),
@@ -124,7 +132,7 @@ public class TodoService {
                 todo.getContent(),
                 tagService.getTagsForTodo(todo.getId())
                         .stream()
-                        .map(Tag::getName)
+                        .map(tag -> new TagGetResponse(tag.getId(), tag.getName()))
                         .toList(),
                 todo.isCompleted(),
                 todo.getDueDate(),
