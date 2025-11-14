@@ -14,6 +14,7 @@ import com.fy26.todo.domain.TodoPosition;
 import com.fy26.todo.dto.todo.TodoCreateRequest;
 import com.fy26.todo.dto.todo.TodoGetResponse;
 import com.fy26.todo.dto.todo.TodoOrderUpdateRequest;
+import com.fy26.todo.dto.todo.TodoUpdateRequest;
 import com.fy26.todo.exception.TodoException;
 import com.fy26.todo.repository.MemberRepository;
 import com.fy26.todo.repository.TodoRepository;
@@ -124,8 +125,9 @@ class TodoServiceTest {
         final Todo savedTodo = todoService.createTodo(request, validMember);
 
         // when & then
-        assertThatThrownBy(() -> todoService.updateTodoOrder(
-                savedTodo.getId(), new TodoOrderUpdateRequest(TodoPosition.TOP, null, null), invalidMember))
+        final long todoId = savedTodo.getId();
+        final TodoOrderUpdateRequest todoOrderRequest = new TodoOrderUpdateRequest(TodoPosition.TOP, null, null);
+        assertThatThrownBy(() -> todoService.updateTodoOrder(todoId, todoOrderRequest, invalidMember))
                 .isExactlyInstanceOf(TodoException.class);
     }
 
@@ -247,4 +249,41 @@ class TodoServiceTest {
         final TodoGetResponse todoInfo = todoService.getTodo(savedTodo.getId());
         assertThat(todoInfo.completed()).isTrue();
     }
+
+    @DisplayName("todo 내용을 수정한다.")
+    @Test
+    void update_todo_content() {
+        // given
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", Collections.emptyList(), LocalDateTime.now());
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+        final Todo savedTodo = todoService.createTodo(request, member);
+
+        // when
+        final String expected = "수정된 할 일";
+        todoService.updateTodo(savedTodo.getId(),
+                new TodoUpdateRequest(expected, null), member);
+
+        // then
+        final TodoGetResponse actual = todoService.getTodo(savedTodo.getId());
+        assertThat(actual.content()).isEqualTo(expected);
+    }
+
+    @DisplayName("투두 마감일을 수정할 때, 현재 날짜보다 이전이면 예외가 발생한다.")
+    @Test
+    void throw_exception_when_update_todo_due_date_before_now() {
+        // given
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", Collections.emptyList(), LocalDateTime.now());
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+        final Todo savedTodo = todoService.createTodo(request, member);
+
+        // when & then
+        final long todoId = savedTodo.getId();
+        final LocalDateTime pastDueDate = LocalDateTime.now().minusDays(1);
+        final TodoUpdateRequest updateRequest = new TodoUpdateRequest(null, pastDueDate);
+        assertThatThrownBy(() -> todoService.updateTodo(todoId, updateRequest, member))
+                .isExactlyInstanceOf(TodoException.class);
+    }
+
 }
