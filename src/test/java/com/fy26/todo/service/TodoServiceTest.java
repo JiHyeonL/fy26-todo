@@ -352,4 +352,41 @@ class TodoServiceTest {
         // then
         assertThat(responses).hasSize(2);
     }
+
+    @DisplayName("투두를 삭제한다.")
+    @Test
+    void delete_todo() {
+        // given
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", Collections.emptyList(),
+                LocalDateTime.now());
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+        final Todo savedTodo = todoService.createTodo(request, member);
+
+        // when
+        todoService.deleteTodo(savedTodo.getId(), member);
+
+        // then
+        final long todoId = savedTodo.getId();
+        assertThatThrownBy(() -> todoService.getTodo(todoId))
+                .isExactlyInstanceOf(TodoException.class);
+    }
+
+    @DisplayName("투두 조회 시 삭제한 투두는 반환하지 않는다.")
+    @Test
+    void do_not_return_deleted_todo_on_get_todos() {
+        // given
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", Collections.emptyList(),
+                LocalDateTime.now());
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+        final Todo savedTodo = todoService.createTodo(request, member);
+
+        // when
+        todoService.deleteTodo(savedTodo.getId(), member);
+        final List<TodoGetResponse> todos = todoService.getTodos(member);
+
+        // then
+        assertThat(todos).isEmpty();
+    }
 }
