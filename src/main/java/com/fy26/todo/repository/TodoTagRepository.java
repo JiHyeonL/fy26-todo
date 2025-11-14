@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface TodoTagRepository extends JpaRepository<TodoTag, Long> {
 
     List<TodoTag> findAllByTodoId(Long todoId);
+
+    void deleteAllByTagId(Long tagId);
 }

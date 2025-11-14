@@ -245,5 +245,10 @@ public class TodoService {
         validateTodoOwner(todo, member);
         todo.setStatus(Status.DELETED);
     }
+
+    @Transactional
+    public void deleteTag(final Long tagId, final Member member) {
+        tagService.deleteTag(tagId, member);
+    }
 }
 

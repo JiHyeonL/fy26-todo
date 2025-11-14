@@ -104,4 +104,12 @@ public class TodoController {
         return ResponseEntity.noContent()
                 .build();
     }
+
+    @DeleteMapping("/tags/{tagId}")
+    public ResponseEntity<Void> deleteTag(final @PathVariable Long tagId, final HttpSession session) {
+        // todo: 세션에서 회원 정보 가져오기
+        todoService.deleteTag(tagId, new Member(Role.USER, "아이디", "비번"));
+        return ResponseEntity.noContent()
+                .build();
+    }
 }
