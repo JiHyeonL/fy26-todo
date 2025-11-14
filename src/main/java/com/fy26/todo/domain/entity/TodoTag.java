@@ -1,4 +1,4 @@
-package com.fy26.todo.domain;
+package com.fy26.todo.domain.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

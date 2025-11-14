@@ -1,7 +1,7 @@
 package com.fy26.todo.repository;
 
-import com.fy26.todo.domain.Member;
-import com.fy26.todo.domain.Tag;
+import com.fy26.todo.domain.entity.Member;
+import com.fy26.todo.domain.entity.Tag;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

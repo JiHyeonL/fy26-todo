@@ -1,9 +1,9 @@
 package com.fy26.todo.service;
 
-import com.fy26.todo.domain.Member;
-import com.fy26.todo.domain.Tag;
-import com.fy26.todo.domain.Todo;
-import com.fy26.todo.domain.TodoTag;
+import com.fy26.todo.domain.entity.Member;
+import com.fy26.todo.domain.entity.Tag;
+import com.fy26.todo.domain.entity.Todo;
+import com.fy26.todo.domain.entity.TodoTag;
 import com.fy26.todo.exception.TagErrorCode;
 import com.fy26.todo.exception.TagException;
 import com.fy26.todo.repository.TagRepository;

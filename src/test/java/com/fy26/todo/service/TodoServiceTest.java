@@ -6,10 +6,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.fy26.todo.domain.Member;
+import com.fy26.todo.domain.entity.Member;
 import com.fy26.todo.domain.Role;
 import com.fy26.todo.domain.Status;
-import com.fy26.todo.domain.Todo;
+import com.fy26.todo.domain.entity.Todo;
 import com.fy26.todo.domain.TodoPosition;
 import com.fy26.todo.dto.tag.TagCreateRequest;
 import com.fy26.todo.dto.tag.TagCreateResponse;

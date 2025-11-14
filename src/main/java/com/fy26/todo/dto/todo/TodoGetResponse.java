@@ -1,7 +1,7 @@
 package com.fy26.todo.dto.todo;
 
-import com.fy26.todo.domain.Tag;
-import com.fy26.todo.domain.Todo;
+import com.fy26.todo.domain.entity.Tag;
+import com.fy26.todo.domain.entity.Todo;
 import com.fy26.todo.dto.tag.TagGetResponse;
 import java.time.LocalDateTime;
 import java.util.List;
