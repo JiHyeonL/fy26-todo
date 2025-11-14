@@ -19,7 +19,9 @@ import com.fy26.todo.dto.todo.TodoOrderUpdateRequest;
 import com.fy26.todo.dto.todo.TodoUpdateRequest;
 import com.fy26.todo.exception.TodoException;
 import com.fy26.todo.repository.MemberRepository;
+import com.fy26.todo.repository.TagRepository;
 import com.fy26.todo.repository.TodoRepository;
+import com.fy26.todo.repository.TodoTagRepository;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +42,12 @@ class TodoServiceTest {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Autowired
+    private TagRepository tagRepository;
+
+    @Autowired
+    private TodoTagRepository todoTagRepository;
+
     @DisplayName("첫 번째 todo를 생성한다.")
     @Test
     void create_todo() {
@@ -53,6 +61,26 @@ class TodoServiceTest {
 
         // then
         assertThat(actual.getOrderIndex()).isEqualTo(INITIAL_ORDER_INDEX);
+    }
+
+    @DisplayName("todo 생성 시 이미 존재하는 태그 이름이 있다면 제외하고 태그를 생성한다.")
+    @Test
+    void create_todo_with_existing_tags() {
+        // given
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+        final List<String> tags = List.of("태그1", "태그2", "태그3");
+        final TodoCreateRequest firstRequest = new TodoCreateRequest("첫 번째 할 일", List.of(tags.get(0), tags.get(1)), LocalDateTime.now());
+        final Todo firstTodo = todoService.createTodo(firstRequest, member);
+        final TodoCreateRequest secondRequest = new TodoCreateRequest("두 번째 할 일", List.of(tags.get(1), tags.get(2)), LocalDateTime.now());
+
+        // when
+        final Todo secondTodo = todoService.createTodo(secondRequest, member);
+
+        // then
+        assertThat(tagRepository.findAllByMemberAndNameIn(member, tags)).hasSize(tags.size());
+        assertThat(todoTagRepository.findAllByTodoId(firstTodo.getId())).hasSize(firstRequest.tagNames().size());
+        assertThat(todoTagRepository.findAllByTodoId(secondTodo.getId())).hasSize(secondRequest.tagNames().size());
     }
 
     @DisplayName("todo를 두 개 생성한다.")
@@ -70,6 +98,25 @@ class TodoServiceTest {
         // then
         assertThat(firstActual.getOrderIndex()).isEqualTo(INITIAL_ORDER_INDEX);
         assertThat(secondActual.getOrderIndex()).isEqualTo(INITIAL_ORDER_INDEX + GAP_ORDER_INDEX);
+    }
+
+    @DisplayName("태그 추가 생성 시 사용자가 다르면 중복 태그 이름을 허용한다.")
+    @Test
+    void create_tags_with_same_name_for_different_members() {
+        // given
+        final Member member1 = new Member(Role.USER, "아이디1", "비번1");
+        final Member member2 = new Member(Role.USER, "아이디2", "비번2");
+        memberRepository.saveAll(List.of(member1, member2));
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", List.of("공통태그"), LocalDateTime.now());
+
+        // when
+        todoService.createTodo(request, member1);
+        todoService.createTodo(request, member2);
+
+        // then
+
+        assertThat(tagRepository.findAllByMemberAndNameIn(member1, request.tagNames())).hasSize(1);
+        assertThat(tagRepository.findAllByMemberAndNameIn(member2, request.tagNames())).hasSize(1);
     }
 
     @DisplayName("사용자가 생성한 모든 todo를 반환한다.")
