@@ -1,9 +1,9 @@
 package com.fy26.todo.service;
 
-import com.fy26.todo.domain.Member;
+import com.fy26.todo.domain.entity.Member;
 import com.fy26.todo.domain.Status;
-import com.fy26.todo.domain.Tag;
-import com.fy26.todo.domain.Todo;
+import com.fy26.todo.domain.entity.Tag;
+import com.fy26.todo.domain.entity.Todo;
 import com.fy26.todo.domain.TodoPosition;
 import com.fy26.todo.dto.tag.TagCreateRequest;
 import com.fy26.todo.dto.tag.TagCreateResponse;
@@ -13,6 +13,7 @@ import com.fy26.todo.dto.todo.TodoGetResponse;
 import com.fy26.todo.dto.todo.TodoOrderContext;
 import com.fy26.todo.dto.todo.TodoOrderUpdateRequest;
 import com.fy26.todo.dto.todo.TodoUpdateRequest;
+import com.fy26.todo.dto.todoshare.TodoShareCreateResponse;
 import com.fy26.todo.exception.TodoErrorCode;
 import com.fy26.todo.exception.TodoException;
 import com.fy26.todo.repository.TodoRepository;
@@ -39,6 +40,7 @@ public class TodoService {
 
     private final TodoRepository todoRepository;
     private final TagService tagService;
+    private final TodoShareService todoShareService;
 
     @Transactional
     public TodoCreateResponse createTodo(final TodoCreateRequest request, final Member member) {
@@ -251,6 +253,14 @@ public class TodoService {
                     return TodoGetResponse.of(todo, dDay, tags);
                 })
                 .toList();
+    }
+
+    @Transactional
+    public TodoShareCreateResponse shareTodo(final Long todoId, final Long targetMemberId, final Member member) {
+        final Todo todo = todoRepository.findById(todoId)
+                .orElseThrow(() -> new TodoException(TodoErrorCode.TODO_NOT_FOUND, Map.of("id", todoId)));
+        validateTodoOwner(todo, member);
+        return todoShareService.shareTodo(todo, targetMemberId);
     }
 }
 

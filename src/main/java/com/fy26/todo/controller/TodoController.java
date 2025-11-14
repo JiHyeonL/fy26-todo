@@ -1,6 +1,6 @@
 package com.fy26.todo.controller;
 
-import com.fy26.todo.domain.Member;
+import com.fy26.todo.domain.entity.Member;
 import com.fy26.todo.domain.Role;
 import com.fy26.todo.dto.tag.TagCreateRequest;
 import com.fy26.todo.dto.tag.TagCreateResponse;
@@ -9,6 +9,7 @@ import com.fy26.todo.dto.todo.TodoCreateResponse;
 import com.fy26.todo.dto.todo.TodoGetResponse;
 import com.fy26.todo.dto.todo.TodoOrderUpdateRequest;
 import com.fy26.todo.dto.todo.TodoUpdateRequest;
+import com.fy26.todo.dto.todoshare.TodoShareCreateResponse;
 import com.fy26.todo.service.TodoService;
 import jakarta.servlet.http.HttpSession;
 import java.net.URI;
@@ -31,12 +32,12 @@ public class TodoController {
     private final TodoService todoService;
 
     @PostMapping("/todos")
-    public ResponseEntity<Long> createTodo(final @RequestBody TodoCreateRequest request, final HttpSession session) {
+    public ResponseEntity<TodoCreateResponse> createTodo(final @RequestBody TodoCreateRequest request, final HttpSession session) {
         // todo: 세션에서 회원 정보 가져오기
         final TodoCreateResponse todo = todoService.createTodo(request, new Member(Role.USER, "아이디", "비번"));
-        final URI location = URI.create("/todo/" + todo.id());
+        final URI location = URI.create("/todos/" + todo.id());
         return ResponseEntity.created(location)
-                .body(todo.id());
+                .body(todo);
     }
 
     @PostMapping("/todos/{id}/tags")
@@ -47,7 +48,20 @@ public class TodoController {
     ) {
         // todo: 세션에서 회원 정보 가져오기
         final List<TagCreateResponse> response = todoService.addTagsFromTodo(id, request, new Member(Role.USER, "아이디", "비번"));
-        final URI location = URI.create("/todo/" + id + "/tags");
+        final URI location = URI.create("/todos/" + id + "/tags");
+        return ResponseEntity.created(location)
+                .body(response);
+    }
+
+    @PostMapping("/todos/{id}/shares")
+    public ResponseEntity<TodoShareCreateResponse> shareTodo(
+            final @PathVariable Long id,
+            @RequestParam("memberId") Long memberId,
+            final HttpSession session
+    ) {
+        // todo: 세션에서 회원 정보 가져오기
+        final TodoShareCreateResponse response = todoService.shareTodo(id, memberId, new Member(Role.USER, "아이디", "비번"));
+        final URI location = URI.create("/todos/" + id + "/shares/" + memberId);
         return ResponseEntity.created(location)
                 .body(response);
     }
