@@ -23,6 +23,7 @@ import com.fy26.todo.repository.MemberRepository;
 import com.fy26.todo.repository.TagRepository;
 import com.fy26.todo.repository.TodoRepository;
 import com.fy26.todo.repository.TodoTagRepository;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -352,6 +353,54 @@ class TodoServiceTest {
 
         // then
         assertThat(responses).hasSize(2);
+    }
+
+    @Transactional
+    @DisplayName("투두를 조건에 맞게 필터링한다.")
+    @Test
+    void filter_todos() {
+        // given
+        final TodoCreateRequest request1 = new TodoCreateRequest("첫 번째 할 일", List.of("태그1"),
+                LocalDateTime.now());
+        final TodoCreateRequest request2 = new TodoCreateRequest("두 번째 할 일", List.of("태그2"),
+                LocalDateTime.now());
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+        final TodoCreateResponse targetTodo = todoService.createTodo(request1, member);
+        todoService.updateComplete(targetTodo.id(), member);
+        todoService.createTodo(request2, member);
+
+        // when
+        final List<TodoGetResponse> filteredTodos = todoService.filterTodos(true, List.of("태그1"), member);
+
+        // then
+        assertThat(filteredTodos).hasSize(1);
+        assertThat(filteredTodos.getFirst().id()).isEqualTo(targetTodo.id());
+    }
+
+    @Transactional
+    @DisplayName("투두를 필터링 할 때, 필터링 할 태그가 하나라도 포함되어 있으면 조회한다.")
+    @Test
+    void filter_todos_include_any_tags() {
+        // given
+        final TodoCreateRequest request1 = new TodoCreateRequest("첫 번째 할 일", List.of("태그1"),
+                LocalDateTime.now());
+        final TodoCreateRequest request2 = new TodoCreateRequest("두 번째 할 일", List.of("태그1", "태그2"),
+                LocalDateTime.now());
+        final TodoCreateRequest request3 = new TodoCreateRequest("세 번째 할 일", List.of("태그3"),
+                LocalDateTime.now());
+        final Member member = new Member(Role.USER, "아이디", "비번");
+        memberRepository.save(member);
+        final TodoCreateResponse todo1 = todoService.createTodo(request1, member);
+        final TodoCreateResponse todo2 = todoService.createTodo(request2, member);
+        todoService.createTodo(request3, member);
+
+        // when
+        final List<TodoGetResponse> filteredTodos = todoService.filterTodos(false, List.of("태그1", "태그2"), member);
+
+        // then
+        assertThat(filteredTodos).hasSize(2);
+        assertThat(filteredTodos.stream().map(TodoGetResponse::id)).containsExactlyInAnyOrder(todo1.id(), todo2.id());
     }
 
     @DisplayName("투두를 삭제한다.")
