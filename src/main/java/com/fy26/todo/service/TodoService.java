@@ -85,7 +85,7 @@ public class TodoService {
     }
 
     @Transactional
-    public List<TagCreateResponse> addTags(final Long id, final TagCreateRequest request, final Member member) {
+    public List<TagCreateResponse> addTagsFromTodo(final Long id, final TagCreateRequest request, final Member member) {
         final Todo todo = todoRepository.findById(id)
                 .orElseThrow(() -> new TodoException(TodoErrorCode.TODO_NOT_FOUND, Map.of("id", id)));
         validateTodoOwner(todo, member);
@@ -236,6 +236,14 @@ public class TodoService {
             }
             todo.setDueDate(request.dueDate());
         }
+    }
+
+    @Transactional
+    public void removeTagFromTodo(final Long todoId, final Long tagId, final Member member) {
+        final Todo todo = todoRepository.findById(todoId)
+                .orElseThrow(() -> new TodoException(TodoErrorCode.TODO_NOT_FOUND, Map.of("id", todoId)));
+        validateTodoOwner(todo, member);
+        tagService.unbindTagFromTodo(todoId, tagId);
     }
 
     @Transactional

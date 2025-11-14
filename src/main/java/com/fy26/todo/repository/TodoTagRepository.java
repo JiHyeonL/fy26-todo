@@ -9,4 +9,6 @@ public interface TodoTagRepository extends JpaRepository<TodoTag, Long> {
     List<TodoTag> findAllByTodoId(Long todoId);
 
     void deleteAllByTagId(Long tagId);
+
+    void deleteByTodoIdAndTagId(Long todoId, Long tagId);
 }

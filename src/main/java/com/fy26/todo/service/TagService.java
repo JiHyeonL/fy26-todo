@@ -74,4 +74,9 @@ public class TagService {
             throw new TagException(TagErrorCode.TAG_UNAUTHORIZED, Map.of("memberId", requestId, "tagOwnerId", tagOwnerId));
         }
     }
+
+    @Transactional
+    public void unbindTagFromTodo(final Long todoId, final Long tagId) {
+        todoTagRepository.deleteByTodoIdAndTagId(todoId, tagId);
+    }
 }

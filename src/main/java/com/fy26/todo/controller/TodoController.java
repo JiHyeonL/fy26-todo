@@ -45,7 +45,7 @@ public class TodoController {
             final HttpSession session
     ) {
         // todo: 세션에서 회원 정보 가져오기
-        final List<TagCreateResponse> response = todoService.addTags(id, request, new Member(Role.USER, "아이디", "비번"));
+        final List<TagCreateResponse> response = todoService.addTagsFromTodo(id, request, new Member(Role.USER, "아이디", "비번"));
         final URI location = URI.create("/todo/" + id + "/tags");
         return ResponseEntity.created(location)
                 .body(response);
@@ -93,6 +93,18 @@ public class TodoController {
     ) {
         // todo: 세션에서 회원 정보 가져오기
         todoService.updateTodo(id, request, new Member(Role.USER, "아이디", "비번"));
+        return ResponseEntity.noContent()
+                .build();
+    }
+
+    @PatchMapping("/todos/{todoId}/tags/{tagId}")
+    public ResponseEntity<Void> removeTagFromTodo(
+            final @PathVariable Long todoId,
+            final @PathVariable Long tagId,
+            final HttpSession session
+    ) {
+        // todo: 세션에서 회원 정보 가져오기
+        todoService.removeTagFromTodo(todoId, tagId, new Member(Role.USER, "아이디", "비번"));
         return ResponseEntity.noContent()
                 .build();
     }
