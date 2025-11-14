@@ -1,4 +1,4 @@
-package com.fy26.todo.dto;
+package com.fy26.todo.dto.todo;
 
 import com.fy26.todo.domain.TodoPosition;
 

@@ -1,4 +1,4 @@
-package com.fy26.todo.dto;
+package com.fy26.todo.dto.todo;
 
 import java.time.LocalDateTime;
 import java.util.List;

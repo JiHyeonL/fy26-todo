@@ -11,13 +11,14 @@ import com.fy26.todo.domain.Role;
 import com.fy26.todo.domain.Status;
 import com.fy26.todo.domain.Todo;
 import com.fy26.todo.domain.TodoPosition;
-import com.fy26.todo.dto.TodoCreateRequest;
-import com.fy26.todo.dto.TodoGetResponse;
-import com.fy26.todo.dto.TodoOrderUpdateRequest;
+import com.fy26.todo.dto.todo.TodoCreateRequest;
+import com.fy26.todo.dto.todo.TodoGetResponse;
+import com.fy26.todo.dto.todo.TodoOrderUpdateRequest;
 import com.fy26.todo.exception.TodoException;
 import com.fy26.todo.repository.MemberRepository;
 import com.fy26.todo.repository.TodoRepository;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,7 +41,7 @@ class TodoServiceTest {
     @Test
     void create_todo() {
         // given
-        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", LocalDateTime.now());
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", Collections.emptyList(), LocalDateTime.now());
         final Member member = new Member(Role.USER, "아이디", "비번");
         memberRepository.save(member);
 
@@ -55,7 +56,7 @@ class TodoServiceTest {
     @Test
     void create_two_todo() {
         // given
-        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", LocalDateTime.now());
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", Collections.emptyList(), LocalDateTime.now());
         final Member member = new Member(Role.USER, "아이디", "비번");
         memberRepository.save(member);
 
@@ -72,7 +73,7 @@ class TodoServiceTest {
     @Test
     void get_todos() {
         // given
-        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", LocalDateTime.now());
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", Collections.emptyList(), LocalDateTime.now());
         final Member member = new Member(Role.USER, "아이디", "비번");
         memberRepository.save(member);
         todoService.createTodo(request, member);
@@ -89,7 +90,7 @@ class TodoServiceTest {
     @Test
     void get_todo_by_id() {
         // given
-        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", LocalDateTime.now());
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", Collections.emptyList(), LocalDateTime.now());
         final Member member = new Member(Role.USER, "아이디", "비번");
         memberRepository.save(member);
         final Todo savedTodo = todoService.createTodo(request, member);
@@ -102,7 +103,7 @@ class TodoServiceTest {
     @Test
     void throw_exception_when_not_found_todo_id() {
         // given
-        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", LocalDateTime.now());
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", Collections.emptyList(), LocalDateTime.now());
         final Member member = new Member(Role.USER, "아이디", "비번");
         memberRepository.save(member);
         final long invalidId = todoService.createTodo(request, member)
@@ -116,7 +117,7 @@ class TodoServiceTest {
     @Test
     void throw_exception_when_update_todo_order_of_another_member() {
         // given
-        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", LocalDateTime.now());
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", Collections.emptyList(), LocalDateTime.now());
         final Member invalidMember = new Member(Role.USER, "아이디1", "비번1");
         final Member validMember = new Member(Role.USER, "아이디2", "비번2");
         memberRepository.saveAll(List.of(invalidMember, validMember));
@@ -132,7 +133,7 @@ class TodoServiceTest {
     @Test
     void update_todo_order_to_top() {
         // given
-        final TodoCreateRequest request = new TodoCreateRequest("할 일", LocalDateTime.now());
+        final TodoCreateRequest request = new TodoCreateRequest("할 일", Collections.emptyList(), LocalDateTime.now());
         final Member member = new Member(Role.USER, "아이디", "비번");
         memberRepository.save(member);
         final Todo firstTodo = todoService.createTodo(request, member);
@@ -151,7 +152,7 @@ class TodoServiceTest {
     @Test
     void update_todo_order_to_bottom() {
         // given
-        final TodoCreateRequest request = new TodoCreateRequest("할 일", LocalDateTime.now());
+        final TodoCreateRequest request = new TodoCreateRequest("할 일", Collections.emptyList(), LocalDateTime.now());
         final Member member = new Member(Role.USER, "아이디", "비번");
         memberRepository.save(member);
         final Todo firstTodo = todoService.createTodo(request, member);
@@ -170,7 +171,7 @@ class TodoServiceTest {
     @Test
     void update_todo_order_between_two_todos() {
         // given
-        final TodoCreateRequest request = new TodoCreateRequest("할 일", LocalDateTime.now());
+        final TodoCreateRequest request = new TodoCreateRequest("할 일", Collections.emptyList(), LocalDateTime.now());
         final Member member = new Member(Role.USER, "아이디", "비번");
         memberRepository.save(member);
         final Todo firstTodo = todoService.createTodo(request, member);
