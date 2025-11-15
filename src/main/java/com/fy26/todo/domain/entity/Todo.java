@@ -46,6 +46,18 @@ public class Todo extends TimeStamp {
     private Status status;
 
     @Builder
+    public Todo(Long id, Member member, String content, Long orderIndex, boolean completed, LocalDateTime dueDate,
+                Status status) {
+        this.id = id;
+        this.member = member;
+        this.content = content;
+        this.orderIndex = orderIndex;
+        this.completed = completed;
+        this.dueDate = dueDate;
+        this.status = status;
+    }
+
+    @Builder
     public Todo(Member member, String content, Long orderIndex, boolean completed, LocalDateTime dueDate,
                 Status status) {
         this.member = member;

@@ -10,6 +10,7 @@ import com.fy26.todo.dto.todo.TodoGetResponse;
 import com.fy26.todo.dto.todo.TodoOrderUpdateRequest;
 import com.fy26.todo.dto.todo.TodoUpdateRequest;
 import com.fy26.todo.dto.todoshare.TodoShareCreateResponse;
+import com.fy26.todo.dto.todoshare.TodoShareDetailGetResponse;
 import com.fy26.todo.service.TodoService;
 import jakarta.servlet.http.HttpSession;
 import java.net.URI;
@@ -78,6 +79,13 @@ public class TodoController {
         // todo: 세션에서 회원 정보 가져오기
         final TodoGetResponse todo = todoService.getTodo(id);
         return ResponseEntity.ok(todo);
+    }
+
+    @GetMapping("/todos/shares")
+    public ResponseEntity<List<TodoShareDetailGetResponse>> getSharedTodos(final HttpSession session) {
+        // todo: 세션에서 회원 정보 가져오기
+        final List<TodoShareDetailGetResponse> response = todoService.getSharedTodos(new Member(Role.USER, "아이디", "비번"));
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/todos/filter")

@@ -3,7 +3,9 @@ package com.fy26.todo.service;
 import com.fy26.todo.domain.entity.Member;
 import com.fy26.todo.domain.entity.Todo;
 import com.fy26.todo.domain.entity.TodoShare;
+import com.fy26.todo.dto.todo.TodoSimpleResponse;
 import com.fy26.todo.dto.todoshare.TodoShareCreateResponse;
+import com.fy26.todo.dto.todoshare.TodoShareSimpleGetResponse;
 import com.fy26.todo.exception.MemberErrorCode;
 import com.fy26.todo.exception.MemberException;
 import com.fy26.todo.exception.TodoShareErrorCode;
@@ -11,6 +13,7 @@ import com.fy26.todo.exception.TodoShareException;
 import com.fy26.todo.repository.MemberRepository;
 import com.fy26.todo.repository.TodoRepository;
 import com.fy26.todo.repository.TodoShareRepository;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -40,5 +43,25 @@ public class TodoShareService {
         }
         final TodoShare savedTodoShare = todoShareRepository.save(new TodoShare(todo, sharedMember));
         return new TodoShareCreateResponse(savedTodoShare.getId(), todo.getId(), sharedMemberId);
+    }
+
+    public List<TodoShareSimpleGetResponse> getAllSharedTodoId(final Long memberId) {
+        final Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND, Map.of("memberId", memberId)));
+        final List<TodoShare> todoShares = todoShareRepository.findAllBySharedMember(member);
+        return todoShares.stream()
+                .map(todoShare -> {
+                    final Todo todo = todoShare.getTodo();
+                    return new TodoShareSimpleGetResponse(
+                            todoShare.getId(),
+                            todo.getMember().getId(),
+                            TodoSimpleResponse.of(todo)
+                    );
+                })
+                .toList();
+    }
+
+    public boolean isSharedWith(final Long todoId, final Long memberId) {
+        return todoShareRepository.existsByTodoIdAndSharedMemberId(todoId, memberId);
     }
 }
