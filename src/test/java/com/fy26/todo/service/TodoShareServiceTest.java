@@ -1,5 +1,6 @@
 package com.fy26.todo.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -8,9 +9,11 @@ import com.fy26.todo.domain.entity.Member;
 import com.fy26.todo.domain.entity.Todo;
 import com.fy26.todo.dto.todo.TodoCreateRequest;
 import com.fy26.todo.dto.todo.TodoCreateResponse;
+import com.fy26.todo.dto.todoshare.TodoShareSimpleGetResponse;
 import com.fy26.todo.exception.TodoShareException;
 import com.fy26.todo.repository.MemberRepository;
 import com.fy26.todo.repository.TodoRepository;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -115,5 +118,53 @@ class TodoShareServiceTest {
             todoShareService.shareTodo(todo1, sharedMember.getId());
             todoShareService.shareTodo(todo2, sharedMember.getId());
         }).doesNotThrowAnyException();
+    }
+
+    @Transactional
+    @DisplayName("여러 사용자에게 공유 받은 todo를 전부 조회한다.")
+    @Test
+    void get_all_shared_todo_all_member() {
+        // given
+        final Member owner1 = memberRepository.save(new Member(Role.USER, "공유한 사람", "비번"));
+        final Member owner2 = memberRepository.save(new Member(Role.USER, "공유한 사람", "비번"));
+        final TodoCreateRequest request1 = new TodoCreateRequest("첫 번째 할 일", List.of("태그1"), LocalDateTime.now());
+        final TodoCreateRequest request2 = new TodoCreateRequest("두 번째 할 일", List.of("태그2"),
+                LocalDateTime.now().plusDays(1));
+        final TodoCreateResponse todoResponse1 = todoService.createTodo(request1, owner1);
+        final TodoCreateResponse todoResponse2 = todoService.createTodo(request2, owner2);
+        final Todo todo1 = todoRepository.findById(todoResponse1.id()).orElseThrow();
+        final Todo todo2 = todoRepository.findById(todoResponse2.id()).orElseThrow();
+        final Member sharedMember = memberRepository.save(new Member(Role.USER, "공유 받는 사람", "비번"));
+        todoShareService.shareTodo(todo1, owner2.getId());
+
+        // when
+        todoShareService.shareTodo(todo1, sharedMember.getId());
+        todoShareService.shareTodo(todo2, sharedMember.getId());
+        final List<TodoShareSimpleGetResponse> actual = todoShareService.getAllSharedTodoId(sharedMember.getId());
+
+        // then
+        assertThat(actual).hasSize(2);
+    }
+
+    @Transactional
+    @DisplayName("한 사용자에게 공유 받은 todo를 모두 조회한다.")
+    @Test
+    void get_all_shared_todo() {
+        // given
+        final TodoCreateRequest request = new TodoCreateRequest("첫 번째 할 일", List.of("태그1"), LocalDateTime.now());
+        final Member owner = memberRepository.save(new Member(Role.USER, "공유한 사람", "비번"));
+        final TodoCreateResponse todoResponse1 = todoService.createTodo(request, owner);
+        final TodoCreateResponse todoResponse2 = todoService.createTodo(request, owner);
+        final Todo todo1 = todoRepository.findById(todoResponse1.id()).orElseThrow();
+        final Todo todo2 = todoRepository.findById(todoResponse2.id()).orElseThrow();
+        final Member sharedMember = memberRepository.save(new Member(Role.USER, "공유 받는 사람1", "비번"));
+
+        // when
+        todoShareService.shareTodo(todo1, sharedMember.getId());
+        todoShareService.shareTodo(todo2, sharedMember.getId());
+        final List<TodoShareSimpleGetResponse> actual = todoShareService.getAllSharedTodoId(sharedMember.getId());
+
+        // then
+        assertThat(actual).hasSize(2);
     }
 }
