@@ -158,7 +158,7 @@ class TodoServiceTest {
         final TodoCreateResponse savedTodo = todoService.createTodo(request, member);
 
         // when & then
-        assertThatCode(() -> todoService.getTodo(savedTodo.id())).doesNotThrowAnyException();
+        assertThatCode(() -> todoService.getTodo(savedTodo.id(), member)).doesNotThrowAnyException();
     }
 
     @DisplayName("존재하지 않는 id로 todo를 조회할 시 예외가 발생한다.")
@@ -172,7 +172,7 @@ class TodoServiceTest {
                 .id() + 1;
 
         // when & then
-        assertThatThrownBy(() -> todoService.getTodo(invalidId)).isExactlyInstanceOf(TodoException.class);
+        assertThatThrownBy(() -> todoService.getTodo(invalidId, member)).isExactlyInstanceOf(TodoException.class);
     }
 
     @DisplayName("다른 사용자가 생성한 todo의 순서를 변경할 시 예외가 발생한다.")
@@ -207,7 +207,7 @@ class TodoServiceTest {
                 new TodoOrderUpdateRequest(TodoPosition.TOP, null, firstTodo.id()), member);
 
         // then
-        final TodoGetResponse secondTodoInfo = todoService.getTodo(secondTodo.id());
+        final TodoGetResponse secondTodoInfo = todoService.getTodo(secondTodo.id(), member);
         assertThat(secondTodoInfo.orderIndex()).isEqualTo(INITIAL_ORDER_INDEX - GAP_ORDER_INDEX);
     }
 
@@ -226,7 +226,7 @@ class TodoServiceTest {
                 new TodoOrderUpdateRequest(TodoPosition.BOTTOM, secondTodo.id(), null), member);
 
         // then
-        final TodoGetResponse firstTodoInfo = todoService.getTodo(firstTodo.id());
+        final TodoGetResponse firstTodoInfo = todoService.getTodo(firstTodo.id(), member);
         assertThat(firstTodoInfo.orderIndex()).isEqualTo(secondTodo.orderIndex() + GAP_ORDER_INDEX);
     }
 
@@ -246,7 +246,7 @@ class TodoServiceTest {
                 new TodoOrderUpdateRequest(TodoPosition.MIDDLE, secondTodo.id(), thirdTodo.id()), member);
 
         // then
-        final TodoGetResponse firstTodoInfo = todoService.getTodo(firstTodo.id());
+        final TodoGetResponse firstTodoInfo = todoService.getTodo(firstTodo.id(), member);
         assertThat(firstTodoInfo.orderIndex()).isEqualTo((secondTodo.orderIndex() + thirdTodo.orderIndex()) / 2);
     }
 
@@ -266,9 +266,9 @@ class TodoServiceTest {
                 new TodoOrderUpdateRequest(TodoPosition.BOTTOM, savedSecondTodo.getId(), null), member);
 
         // then
-        final long firstOrderIndex = todoService.getTodo(savedFirstTodo.getId()).orderIndex();
+        final long firstOrderIndex = todoService.getTodo(savedFirstTodo.getId(), member).orderIndex();
         assertThat(firstOrderIndex).isEqualTo(INITIAL_ORDER_INDEX + GAP_ORDER_INDEX * 2);
-        final long secondOrderIndex = todoService.getTodo(savedSecondTodo.getId()).orderIndex();
+        final long secondOrderIndex = todoService.getTodo(savedSecondTodo.getId(), member).orderIndex();
         assertThat(secondOrderIndex).isEqualTo(INITIAL_ORDER_INDEX + GAP_ORDER_INDEX);
     }
 
@@ -290,7 +290,7 @@ class TodoServiceTest {
                 new TodoOrderUpdateRequest(TodoPosition.MIDDLE, savedFirstTodo.getId(), savedSecondTodo.getId()), member);
 
         // then
-        final long thirdOrderIndex = todoService.getTodo(savedThirdTodo.getId()).orderIndex();
+        final long thirdOrderIndex = todoService.getTodo(savedThirdTodo.getId(), member).orderIndex();
         assertThat(thirdOrderIndex).isEqualTo((INITIAL_ORDER_INDEX * 2 + GAP_ORDER_INDEX) / 2);
     }
 
@@ -307,7 +307,7 @@ class TodoServiceTest {
         todoService.updateComplete(savedTodo.id(), member);
 
         // then
-        final TodoGetResponse todoInfo = todoService.getTodo(savedTodo.id());
+        final TodoGetResponse todoInfo = todoService.getTodo(savedTodo.id(), member);
         assertThat(todoInfo.completed()).isTrue();
     }
 
@@ -326,7 +326,7 @@ class TodoServiceTest {
                 new TodoUpdateRequest(expected, null), member);
 
         // then
-        final TodoGetResponse actual = todoService.getTodo(savedTodo.id());
+        final TodoGetResponse actual = todoService.getTodo(savedTodo.id(), member);
         assertThat(actual.content()).isEqualTo(expected);
     }
 
@@ -428,7 +428,7 @@ class TodoServiceTest {
 
         // then
         final long todoId = savedTodo.id();
-        assertThatThrownBy(() -> todoService.getTodo(todoId))
+        assertThatThrownBy(() -> todoService.getTodo(todoId, member))
                 .isExactlyInstanceOf(TodoException.class);
     }
 
