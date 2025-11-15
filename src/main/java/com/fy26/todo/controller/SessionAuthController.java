@@ -1,8 +1,11 @@
 package com.fy26.todo.controller;
 
+import com.fy26.todo.dto.member.LoginRequest;
+import com.fy26.todo.dto.member.LoginResponse;
 import com.fy26.todo.dto.member.SignupRequest;
 import com.fy26.todo.dto.member.SignupResponse;
 import com.fy26.todo.service.MemberService;
+import jakarta.servlet.http.HttpSession;
 import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,5 +25,11 @@ public class SessionAuthController {
         final URI location = URI.create("/members/" + response.id());
         return ResponseEntity.created(location)
                 .body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(final @RequestBody LoginRequest request, final HttpSession httpSession) {
+        final LoginResponse response = memberService.login(request, httpSession);
+        return ResponseEntity.ok(response);
     }
 }
