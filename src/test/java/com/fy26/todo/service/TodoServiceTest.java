@@ -23,10 +23,12 @@ import com.fy26.todo.repository.MemberRepository;
 import com.fy26.todo.repository.TagRepository;
 import com.fy26.todo.repository.TodoRepository;
 import com.fy26.todo.repository.TodoTagRepository;
+import com.fy26.todo.support.Cleanup;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class TodoServiceTest {
+
+    @Autowired
+    private Cleanup cleanup;
 
     @Autowired
     private TodoService todoService;
@@ -49,6 +54,11 @@ class TodoServiceTest {
 
     @Autowired
     private TodoTagRepository todoTagRepository;
+
+    @BeforeEach
+    void setUp() {
+        cleanup.all();
+    }
 
     @DisplayName("첫 번째 todo를 생성한다.")
     @Test

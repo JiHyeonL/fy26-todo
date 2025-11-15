@@ -13,9 +13,11 @@ import com.fy26.todo.dto.todoshare.TodoShareSimpleGetResponse;
 import com.fy26.todo.exception.TodoShareException;
 import com.fy26.todo.repository.MemberRepository;
 import com.fy26.todo.repository.TodoRepository;
+import com.fy26.todo.support.Cleanup;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class TodoShareServiceTest {
+
+    @Autowired
+    private Cleanup cleanup;
 
     @Autowired
     private TodoService todoService;
@@ -35,6 +40,11 @@ class TodoShareServiceTest {
 
     @Autowired
     private TodoRepository todoRepository;
+
+    @BeforeEach
+    void setUp() {
+        cleanup.all();
+    }
 
     @DisplayName("다른 사용자에게 todo를 공유한다.")
     @Test
@@ -125,8 +135,8 @@ class TodoShareServiceTest {
     @Test
     void get_all_shared_todo_all_member() {
         // given
-        final Member owner1 = memberRepository.save(new Member(Role.USER, "공유한 사람", "비번"));
-        final Member owner2 = memberRepository.save(new Member(Role.USER, "공유한 사람", "비번"));
+        final Member owner1 = memberRepository.save(new Member(Role.USER, "공유한 사람1", "비번"));
+        final Member owner2 = memberRepository.save(new Member(Role.USER, "공유한 사람2", "비번"));
         final TodoCreateRequest request1 = new TodoCreateRequest("첫 번째 할 일", List.of("태그1"), LocalDateTime.now());
         final TodoCreateRequest request2 = new TodoCreateRequest("두 번째 할 일", List.of("태그2"),
                 LocalDateTime.now().plusDays(1));
