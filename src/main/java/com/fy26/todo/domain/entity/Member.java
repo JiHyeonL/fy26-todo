@@ -22,22 +22,22 @@ public class Member extends TimeStamp {
     @Column(name = "role")
     private Role role;
 
-    @Column(name = "member_name")
-    private String memberName;
+    @Column(name = "username", unique = true)
+    private String username;
 
     @Column(name = "password")
     private String password;
 
-    public Member(Role role, String memberName, String password) {
+    public Member(Role role, String username, String password) {
         this.role = role;
-        this.memberName = memberName;
+        this.username = username;
         this.password = password;
     }
 
-    public Member(Long id, Role role, String memberName, String password) {
+    public Member(Long id, Role role, String username, String password) {
         this.id = id;
         this.role = role;
-        this.memberName = memberName;
+        this.username = username;
         this.password = password;
     }
 }
