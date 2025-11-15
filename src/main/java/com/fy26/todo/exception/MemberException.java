@@ -9,4 +9,8 @@ public class MemberException extends CustomException {
     public MemberException(CustomErrorCode errorCode, Map<String, Object> invalidData) {
         super(errorCode, invalidData, null);
     }
+
+    public MemberException(CustomErrorCode errorCode) {
+        super(errorCode, null, null);
+    }
 }

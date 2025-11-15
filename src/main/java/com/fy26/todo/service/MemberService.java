@@ -55,4 +55,16 @@ public class MemberService {
         httpSession.setAttribute(LOGIN_SESSION_NAME, member.getId());
         return new LoginResponse(member.getUsername());
     }
+
+    public Member getLoginMember(final HttpSession httpSession) {
+        final Long memberId = (Long) httpSession.getAttribute(LOGIN_SESSION_NAME);
+        if (memberId == null) {
+            throw new MemberException(MemberErrorCode.MEMBER_UNAUTHORIZED);
+        }
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(
+                        MemberErrorCode.MEMBER_NOT_FOUND,
+                        Map.of("memberId", memberId))
+                );
+    }
 }

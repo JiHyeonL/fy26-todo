@@ -1,7 +1,6 @@
 package com.fy26.todo.controller;
 
 import com.fy26.todo.domain.entity.Member;
-import com.fy26.todo.domain.Role;
 import com.fy26.todo.dto.tag.TagCreateRequest;
 import com.fy26.todo.dto.tag.TagCreateResponse;
 import com.fy26.todo.dto.todo.TodoCreateRequest;
@@ -11,6 +10,7 @@ import com.fy26.todo.dto.todo.TodoOrderUpdateRequest;
 import com.fy26.todo.dto.todo.TodoUpdateRequest;
 import com.fy26.todo.dto.todoshare.TodoShareCreateResponse;
 import com.fy26.todo.dto.todoshare.TodoShareDetailGetResponse;
+import com.fy26.todo.service.MemberService;
 import com.fy26.todo.service.TodoService;
 import jakarta.servlet.http.HttpSession;
 import java.net.URI;
@@ -31,11 +31,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class TodoController {
 
     private final TodoService todoService;
+    private final MemberService memberService;
 
     @PostMapping("/todos")
     public ResponseEntity<TodoCreateResponse> createTodo(final @RequestBody TodoCreateRequest request, final HttpSession session) {
-        // todo: 세션에서 회원 정보 가져오기
-        final TodoCreateResponse todo = todoService.createTodo(request, new Member(Role.USER, "아이디", "비번"));
+        final Member loginMember = memberService.getLoginMember(session);
+        final TodoCreateResponse todo = todoService.createTodo(request, loginMember);
         final URI location = URI.create("/todos/" + todo.id());
         return ResponseEntity.created(location)
                 .body(todo);
@@ -47,8 +48,8 @@ public class TodoController {
             final @RequestBody TagCreateRequest request,
             final HttpSession session
     ) {
-        // todo: 세션에서 회원 정보 가져오기
-        final List<TagCreateResponse> response = todoService.addTagsFromTodo(id, request, new Member(Role.USER, "아이디", "비번"));
+        final Member loginMember = memberService.getLoginMember(session);
+        final List<TagCreateResponse> response = todoService.addTagsFromTodo(id, request, loginMember);
         final URI location = URI.create("/todos/" + id + "/tags");
         return ResponseEntity.created(location)
                 .body(response);
@@ -60,8 +61,8 @@ public class TodoController {
             @RequestParam("memberId") Long memberId,
             final HttpSession session
     ) {
-        // todo: 세션에서 회원 정보 가져오기
-        final TodoShareCreateResponse response = todoService.shareTodo(id, memberId, new Member(Role.USER, "아이디", "비번"));
+        final Member loginMember = memberService.getLoginMember(session);
+        final TodoShareCreateResponse response = todoService.shareTodo(id, memberId, loginMember);
         final URI location = URI.create("/todos/" + id + "/shares/" + memberId);
         return ResponseEntity.created(location)
                 .body(response);
@@ -69,22 +70,22 @@ public class TodoController {
 
     @GetMapping("/todos")
     public ResponseEntity<List<TodoGetResponse>> getTodos(final HttpSession session) {
-        // todo: 세션에서 회원 정보 가져오기
-        final List<TodoGetResponse> todos = todoService.getTodos(new Member(Role.USER, "아이디", "비번"));
+        final Member loginMember = memberService.getLoginMember(session);
+        final List<TodoGetResponse> todos = todoService.getTodos(loginMember);
         return ResponseEntity.ok(todos);
     }
 
     @GetMapping("/todos/{id}")
     public ResponseEntity<TodoGetResponse> getTodo(final @PathVariable Long id, final HttpSession session) {
-        // todo: 세션에서 회원 정보 가져오기
-        final TodoGetResponse todo = todoService.getTodo(id);
+        final Member loginMember = memberService.getLoginMember(session);
+        final TodoGetResponse todo = todoService.getTodo(id, loginMember);
         return ResponseEntity.ok(todo);
     }
 
     @GetMapping("/todos/shares")
     public ResponseEntity<List<TodoShareDetailGetResponse>> getSharedTodos(final HttpSession session) {
-        // todo: 세션에서 회원 정보 가져오기
-        final List<TodoShareDetailGetResponse> response = todoService.getSharedTodos(new Member(Role.USER, "아이디", "비번"));
+        final Member loginMember = memberService.getLoginMember(session);
+        final List<TodoShareDetailGetResponse> response = todoService.getSharedTodos(loginMember);
         return ResponseEntity.ok(response);
     }
 
@@ -94,8 +95,8 @@ public class TodoController {
             @RequestParam(required = false) List<String> tags,
             final HttpSession session
     ) {
-        // todo: 세션에서 회원 정보 가져오기
-        final List<TodoGetResponse> response = todoService.filterTodos(completed, tags, new Member(Role.USER, "아이디", "비번"));
+        final Member loginMember = memberService.getLoginMember(session);
+        final List<TodoGetResponse> response = todoService.filterTodos(completed, tags, loginMember);
         return ResponseEntity.ok(response);
     }
 
@@ -105,16 +106,16 @@ public class TodoController {
             final @RequestBody TodoOrderUpdateRequest request,
             final HttpSession session
     ) {
-        // todo: 세션에서 회원 정보 가져오기
-        todoService.updateTodoOrder(id, request, new Member(Role.USER, "아이디", "비번"));
+        final Member loginMember = memberService.getLoginMember(session);
+        todoService.updateTodoOrder(id, request, loginMember);
         return ResponseEntity.noContent()
                 .build();
     }
 
     @PatchMapping("/todos/{id}/complete")
     public ResponseEntity<Void> toggleTodoComplete(final @PathVariable Long id, final HttpSession session) {
-        // todo: 세션에서 회원 정보 가져오기
-        todoService.updateComplete(id, new Member(Role.USER, "아이디", "비번"));
+        final Member loginMember = memberService.getLoginMember(session);
+        todoService.updateComplete(id, loginMember);
         return ResponseEntity.noContent()
                 .build();
     }
@@ -125,8 +126,8 @@ public class TodoController {
             final @RequestBody TodoUpdateRequest request,
             final HttpSession session
     ) {
-        // todo: 세션에서 회원 정보 가져오기
-        todoService.updateTodo(id, request, new Member(Role.USER, "아이디", "비번"));
+        final Member loginMember = memberService.getLoginMember(session);
+        todoService.updateTodo(id, request, loginMember);
         return ResponseEntity.noContent()
                 .build();
     }
@@ -137,24 +138,24 @@ public class TodoController {
             final @PathVariable Long tagId,
             final HttpSession session
     ) {
-        // todo: 세션에서 회원 정보 가져오기
-        todoService.removeTagFromTodo(todoId, tagId, new Member(Role.USER, "아이디", "비번"));
+        final Member loginMember = memberService.getLoginMember(session);
+        todoService.removeTagFromTodo(todoId, tagId, loginMember);
         return ResponseEntity.noContent()
                 .build();
     }
 
     @DeleteMapping("/todos/{id}")
     public ResponseEntity<Void> deleteTodo(final @PathVariable Long id, final HttpSession session) {
-        // todo: 세션에서 회원 정보 가져오기
-        todoService.deleteTodo(id, new Member(Role.USER, "아이디", "비번"));
+        final Member loginMember = memberService.getLoginMember(session);
+        todoService.deleteTodo(id, loginMember);
         return ResponseEntity.noContent()
                 .build();
     }
 
     @DeleteMapping("/tags/{tagId}")
     public ResponseEntity<Void> deleteTag(final @PathVariable Long tagId, final HttpSession session) {
-        // todo: 세션에서 회원 정보 가져오기
-        todoService.deleteTag(tagId, new Member(Role.USER, "아이디", "비번"));
+        final Member loginMember = memberService.getLoginMember(session);
+        todoService.deleteTag(tagId, loginMember);
         return ResponseEntity.noContent()
                 .build();
     }

@@ -127,9 +127,10 @@ public class TodoService {
                 .toList();
     }
 
-    public TodoGetResponse getTodo(final Long id) {
+    public TodoGetResponse getTodo(final Long id, final Member member) {
         final Todo todo = todoRepository.findById(id)
                 .orElseThrow(() -> new TodoException(TodoErrorCode.TODO_NOT_FOUND, Map.of("id", id)));
+        validateTodoOwner(todo, member);
         final List<Tag> tags = tagService.getTagsForTodo(todo.getId());
         return TodoGetResponse.of(todo, tags);
     }
