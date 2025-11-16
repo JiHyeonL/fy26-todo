@@ -13,6 +13,7 @@ import com.fy26.todo.dto.todoshare.TodoShareDetailGetResponse;
 import com.fy26.todo.service.MemberService;
 import com.fy26.todo.service.TodoService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,10 @@ public class TodoController {
     private final MemberService memberService;
 
     @PostMapping("/todos")
-    public ResponseEntity<TodoCreateResponse> createTodo(final @RequestBody TodoCreateRequest request, final HttpSession session) {
+    public ResponseEntity<TodoCreateResponse> createTodo(
+            final @Valid @RequestBody TodoCreateRequest request,
+            final HttpSession session
+    ) {
         final Member loginMember = memberService.getLoginMember(session);
         final TodoCreateResponse todo = todoService.createTodo(request, loginMember);
         final URI location = URI.create("/todos/" + todo.id());
@@ -45,7 +49,7 @@ public class TodoController {
     @PostMapping("/todos/{id}/tags")
     public ResponseEntity<List<TagCreateResponse>> addTagsToTodo(
             final @PathVariable Long id,
-            final @RequestBody TagCreateRequest request,
+            final @Valid @RequestBody TagCreateRequest request,
             final HttpSession session
     ) {
         final Member loginMember = memberService.getLoginMember(session);
@@ -103,7 +107,7 @@ public class TodoController {
     @PatchMapping("/todos/{id}/order")
     public ResponseEntity<Void> updateTodoOrder(
             final @PathVariable Long id,
-            final @RequestBody TodoOrderUpdateRequest request,
+            final @Valid @RequestBody TodoOrderUpdateRequest request,
             final HttpSession session
     ) {
         final Member loginMember = memberService.getLoginMember(session);
@@ -123,7 +127,7 @@ public class TodoController {
     @PatchMapping("/todos/{id}")
     public ResponseEntity<Void> updateTodo(
             final @PathVariable Long id,
-            final @RequestBody TodoUpdateRequest request,
+            final @Valid @RequestBody TodoUpdateRequest request,
             final HttpSession session
     ) {
         final Member loginMember = memberService.getLoginMember(session);

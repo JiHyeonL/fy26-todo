@@ -22,10 +22,10 @@ public class Member extends TimeStamp {
     @Column(name = "role")
     private Role role;
 
-    @Column(name = "username", unique = true)
+    @Column(name = "username", unique = true, length = 20)
     private String username;
 
-    @Column(name = "password")
+    @Column(name = "password", length = 64)
     private String password;
 
     public Member(Role role, String username, String password) {
