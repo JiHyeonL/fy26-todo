@@ -14,7 +14,6 @@ import com.fy26.todo.exception.TodoShareException;
 import com.fy26.todo.repository.MemberRepository;
 import com.fy26.todo.repository.TodoRepository;
 import com.fy26.todo.support.Cleanup;
-import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -130,7 +129,6 @@ class TodoShareServiceTest {
         }).doesNotThrowAnyException();
     }
 
-    @Transactional
     @DisplayName("여러 사용자에게 공유 받은 todo를 전부 조회한다.")
     @Test
     void get_all_shared_todo_all_member() {
@@ -156,7 +154,6 @@ class TodoShareServiceTest {
         assertThat(actual).hasSize(2);
     }
 
-    @Transactional
     @DisplayName("한 사용자에게 공유 받은 todo를 모두 조회한다.")
     @Test
     void get_all_shared_todo() {

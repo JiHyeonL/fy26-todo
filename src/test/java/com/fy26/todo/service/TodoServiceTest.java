@@ -24,7 +24,6 @@ import com.fy26.todo.repository.TagRepository;
 import com.fy26.todo.repository.TodoRepository;
 import com.fy26.todo.repository.TodoTagRepository;
 import com.fy26.todo.support.Cleanup;
-import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -91,8 +90,8 @@ class TodoServiceTest {
 
         // then
         assertThat(tagRepository.findAllByMemberAndNameIn(member, tags)).hasSize(tags.size());
-        assertThat(todoTagRepository.findAllByTodoId(firstTodo.id())).hasSize(firstRequest.tagNames().size());
-        assertThat(todoTagRepository.findAllByTodoId(secondTodo.id())).hasSize(secondRequest.tagNames().size());
+        assertThat(todoTagRepository.findAllTagByTodoId(firstTodo.id())).hasSize(firstRequest.tagNames().size());
+        assertThat(todoTagRepository.findAllTagByTodoId(secondTodo.id())).hasSize(secondRequest.tagNames().size());
     }
 
     @DisplayName("todo를 두 개 생성한다.")
@@ -365,7 +364,6 @@ class TodoServiceTest {
         assertThat(responses).hasSize(2);
     }
 
-    @Transactional
     @DisplayName("투두를 조건에 맞게 필터링한다.")
     @Test
     void filter_todos() {
@@ -388,7 +386,6 @@ class TodoServiceTest {
         assertThat(filteredTodos.getFirst().id()).isEqualTo(targetTodo.id());
     }
 
-    @Transactional
     @DisplayName("투두를 필터링 할 때, 필터링 할 태그가 하나라도 포함되어 있으면 조회한다.")
     @Test
     void filter_todos_include_any_tags() {
@@ -468,7 +465,7 @@ class TodoServiceTest {
 
         // then
         assertThat(tagRepository.findById(deletedTagId)).isEmpty();
-        assertThat(todoTagRepository.findAllByTodoId(todoId)).isEmpty();
+        assertThat(todoTagRepository.findAllTagByTodoId(todoId)).isEmpty();
     }
 
     @DisplayName("투두에 있는 태그를 해제한다.")
@@ -488,6 +485,6 @@ class TodoServiceTest {
         todoService.removeTagFromTodo(todo.id(), tagId, member);
 
         // then
-        assertThat(todoTagRepository.findAllByTodoId(todo.id())).hasSize(tags.size() - 1);
+        assertThat(todoTagRepository.findAllTagByTodoId(todo.id())).hasSize(tags.size() - 1);
     }
 }
