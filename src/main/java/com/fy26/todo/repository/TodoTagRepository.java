@@ -19,4 +19,6 @@ public interface TodoTagRepository extends JpaRepository<TodoTag, Long> {
     void deleteAllByTagId(Long tagId);
 
     void deleteByTodoIdAndTagId(Long todoId, Long tagId);
+
+    boolean existsByTodoIdAndTagId(Long todoId, Long tagId);
 }

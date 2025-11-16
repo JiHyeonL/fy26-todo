@@ -41,6 +41,7 @@ public class TagService {
     @Transactional
     public List<TodoTag> bindExistingTags(final Todo todo, final List<Tag> tags) {
         final List<TodoTag> todoTags = tags.stream()
+                .filter(tag -> !todoTagRepository.existsByTodoIdAndTagId(todo.getId(), tag.getId()))
                 .map(tag -> new TodoTag(todo, tag))
                 .toList();
         return todoTagRepository.saveAll(todoTags);
