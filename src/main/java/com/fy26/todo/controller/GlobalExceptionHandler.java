@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
         );
         final CustomException customException = new CustomException(
                 HttpStatus.BAD_REQUEST,
-                "요청 데이터 검증에 실패했습니다.",
+                e.getMessage(),
                 invalidFields,
                 e
         );
