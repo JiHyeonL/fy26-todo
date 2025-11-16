@@ -47,10 +47,7 @@ public class TagService {
     }
 
     public List<Tag> getTagsForTodo(final Long todoId) {
-        final List<TodoTag> todoTags = todoTagRepository.findAllByTodoId(todoId);
-        return todoTags.stream()
-                .map(TodoTag::getTag)
-                .toList();
+        return todoTagRepository.findAllTagByTodoId(todoId);
     }
 
     public List<Tag> getExistingTags(final List<String> tagNames, final Member member) {

@@ -41,7 +41,7 @@
 - [x] 요청 dto 검증
 - [ ] 도메인 제약 조건 정의(null 허용, 길이, 범위 등)
 - [ ] 엔티티 필드 객체로 변경 후 그 안에 검증 로직 이동
-- [ ] Lazy 로딩 시 N+1 문제 발생 가능 -> fetch join 적용 후 테스트 @Transactional 제거
+- [x] Lazy 로딩 시 N+1 문제 발생 가능 -> fetch join 적용 후 테스트 @Transactional 제거
 - [x] 예외처리
 - 태그
   - [x] Todo에 태그 생성(태그 없이 생성 요청 가능)

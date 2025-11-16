@@ -107,7 +107,7 @@ public class TodoService {
     }
 
     public List<TodoGetResponse> getTodos(final Member member) {
-        final List<Todo> todos = todoRepository.findAllByMemberOrderByOrderIndexAsc(member);
+        final List<Todo> todos = todoRepository.findAllByMemberOrdered(member);
         return todos.stream()
                 .map(todo -> {
                     final List<Tag> tags = tagService.getTagsForTodo(todo.getId());
@@ -201,7 +201,7 @@ public class TodoService {
     }
 
     private void rebalanceOrder(final Member member) {
-        final List<Todo> todos = todoRepository.findAllByMemberOrderByOrderIndexAsc(member);
+        final List<Todo> todos = todoRepository.findAllByMemberOrdered(member);
         long orderIndex = INITIAL_ORDER_INDEX;
         for (final Todo todo : todos) {
             todo.setOrderIndex(orderIndex);

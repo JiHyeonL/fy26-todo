@@ -18,18 +18,29 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
     @Query("SELECT t.orderIndex FROM Todo t WHERE t.id = :id AND t.status = com.fy26.todo.domain.Status.ACTIVE")
     Optional<Long> findOrderIndexById(@Param("id") long id);
 
-    List<Todo> findAllByMemberOrderByOrderIndexAsc(Member member);
+    @Query("""
+        SELECT DISTINCT t
+        FROM Todo t
+        JOIN FETCH t.member
+        LEFT JOIN FETCH TodoTag tt ON t.id = tt.todo.id
+        LEFT JOIN FETCH Tag tag ON tt.tag.id = tag.id
+        WHERE t.member = :member
+          AND t.status = com.fy26.todo.domain.Status.ACTIVE
+        ORDER BY t.orderIndex ASC
+    """)
+    List<Todo> findAllByMemberOrdered(@Param("member") Member member);
 
     @Query("""
         SELECT DISTINCT t
         FROM Todo t
-        JOIN t.member m
-        LEFT JOIN TodoTag tt ON t.id = tt.todo.id
-        LEFT JOIN Tag tag ON tt.tag.id = tag.id
+        JOIN FETCH t.member m
+        LEFT JOIN FETCH TodoTag tt ON t.id = tt.todo.id
+        LEFT JOIN FETCH Tag tag ON tt.tag.id = tag.id
         WHERE m = :member
           AND (:completed IS NULL OR t.completed = :completed)
           AND (:tagNames IS NULL OR tag.name IN :tagNames)
           AND t.status = com.fy26.todo.domain.Status.ACTIVE
+        ORDER BY t.orderIndex ASC
     """)
     List<Todo> findFilteredTodos(
             @Param("member") Member member,
