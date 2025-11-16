@@ -3,6 +3,8 @@ package com.fy26.todo.domain.entity;
 import com.fy26.todo.domain.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -42,6 +44,7 @@ public class Todo extends TimeStamp {
     @Column(name = "due_date")
     private LocalDateTime dueDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Status status;
 
