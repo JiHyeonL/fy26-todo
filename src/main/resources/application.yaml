@@ -15,6 +15,7 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
+
 jwt:
   secret-key: "F9t@X3r#8pQ2!Zm5K7b$H1vT0sL9wE6c"
   expiration-ms: 3600000
