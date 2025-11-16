@@ -97,10 +97,11 @@ public class TodoController {
     public ResponseEntity<List<TodoGetResponse>> filterTodos(
             @RequestParam(required = false) Boolean completed,
             @RequestParam(required = false) List<String> tags,
+            @RequestParam(required = false) Long memberId,
             final HttpSession session
     ) {
         final Member loginMember = memberService.getLoginMember(session);
-        final List<TodoGetResponse> response = todoService.filterTodos(completed, tags, loginMember);
+        final List<TodoGetResponse> response = todoService.filterTodos(completed, tags, memberId, loginMember);
         return ResponseEntity.ok(response);
     }
 

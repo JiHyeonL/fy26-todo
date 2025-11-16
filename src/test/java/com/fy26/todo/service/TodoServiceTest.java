@@ -379,7 +379,7 @@ class TodoServiceTest {
         todoService.createTodo(request2, member);
 
         // when
-        final List<TodoGetResponse> filteredTodos = todoService.filterTodos(true, List.of("태그1"), member);
+        final List<TodoGetResponse> filteredTodos = todoService.filterTodos(true, List.of("태그1"), null, member);
 
         // then
         assertThat(filteredTodos).hasSize(1);
@@ -403,7 +403,7 @@ class TodoServiceTest {
         todoService.createTodo(request3, member);
 
         // when
-        final List<TodoGetResponse> filteredTodos = todoService.filterTodos(false, List.of("태그1", "태그2"), member);
+        final List<TodoGetResponse> filteredTodos = todoService.filterTodos(false, List.of("태그1", "태그2"), null, member);
 
         // then
         assertThat(filteredTodos).hasSize(2);

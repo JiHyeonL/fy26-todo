@@ -254,8 +254,23 @@ public class TodoService {
         tagService.deleteTag(tagId, member);
     }
 
-    public List<TodoGetResponse> filterTodos(final Boolean completed, final List<String> tagNames, final Member member) {
-        return todoRepository.findFilteredTodos(member, completed, tagNames)
+    public List<TodoGetResponse> filterTodos(
+            final Boolean completed,
+            final List<String> tagNames,
+            final Long filteredMemberId,
+            final Member member
+    ) {
+        if (filteredMemberId == null || filteredMemberId.equals(member.getId())) {
+            return todoRepository.findFilteredTodos(member, completed, tagNames)
+                    .stream()
+                    .map(todo -> {
+                        final List<Tag> tags = tagService.getTagsForTodo(todo.getId());
+                        return TodoGetResponse.of(todo, tags);
+                    })
+                    .toList();
+        }
+        final List<Long> allSharedTodosByOwner = todoShareService.getAllSharedTodosByOwner(filteredMemberId, member.getId());
+        return todoRepository.findTodosByIdsFiltered(allSharedTodosByOwner, completed,  tagNames)
                 .stream()
                 .map(todo -> {
                     final List<Tag> tags = tagService.getTagsForTodo(todo.getId());

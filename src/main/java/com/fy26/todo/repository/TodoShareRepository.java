@@ -21,4 +21,15 @@ public interface TodoShareRepository extends JpaRepository<TodoShare, Long> {
         WHERE ts.sharedMember = :member
     """)
     List<TodoShare> findAllBySharedMember(@Param("member") Member member);
+
+    @Query("""
+        SELECT ts.todo.id
+        FROM TodoShare ts
+        WHERE ts.todo.member.id = :ownerId
+          AND ts.sharedMember.id = :sharedMemberId
+    """)
+    List<Long> findTodoIdSharedByOwnerToMember(
+            @Param("ownerId") Long ownerId,
+            @Param("sharedMemberId") Long sharedMemberId
+    );
 }

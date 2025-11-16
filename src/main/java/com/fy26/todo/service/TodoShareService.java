@@ -61,7 +61,7 @@ public class TodoShareService {
                 .toList();
     }
 
-    public boolean isSharedWith(final Long todoId, final Long memberId) {
-        return todoShareRepository.existsByTodoIdAndSharedMemberId(todoId, memberId);
+    public List<Long> getAllSharedTodosByOwner(final Long filteredMemberId, final Long sharedMemberId) {
+        return todoShareRepository.findTodoIdSharedByOwnerToMember(filteredMemberId, sharedMemberId);
     }
 }

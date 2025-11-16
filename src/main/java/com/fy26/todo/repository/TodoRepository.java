@@ -47,4 +47,21 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
             @Param("completed") Boolean completed,
             @Param("tagNames") List<String> tagNames
     );
+
+    @Query("""
+        SELECT DISTINCT t
+        FROM Todo t
+        LEFT JOIN FETCH TodoTag tt ON t.id = tt.todo.id
+        LEFT JOIN FETCH Tag tag ON tt.tag.id = tag.id
+        WHERE t.id IN :todoIds
+          AND (:completed IS NULL OR t.completed = :completed)
+          AND (:tagNames IS NULL OR tag.name IN :tagNames)
+          AND t.status = com.fy26.todo.domain.Status.ACTIVE
+        ORDER BY t.orderIndex ASC
+    """)
+    List<Todo> findTodosByIdsFiltered(
+            @Param("todoIds") List<Long> todoIds,
+            @Param("completed") Boolean completed,
+            @Param("tagNames") List<String> tagNames
+    );
 }
